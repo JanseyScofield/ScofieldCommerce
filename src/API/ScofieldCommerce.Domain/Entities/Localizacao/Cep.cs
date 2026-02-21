@@ -4,7 +4,9 @@ namespace ScofieldCommerce.Domain.Entities.Localizacao
 {
     public class Cep
     {
-        public string Valor { get; private set; }  
+        public string Valor { get; private set; } = null!;
+
+        protected Cep() { }
 
         public Cep(string valor)
         {
