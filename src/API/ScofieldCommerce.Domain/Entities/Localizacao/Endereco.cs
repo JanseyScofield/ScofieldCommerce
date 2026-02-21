@@ -4,13 +4,13 @@ namespace ScofieldCommerce.Domain.Entities.Localizacao
 {
     public class Endereco
     {
-        public string Logradouro { get; set; }
-        public string Numero { get; set; }
-        public string Complemento { get; set; }
-        public string Bairro { get; set; }
-        public string Cidade { get; set; }
-        public string Estado { get; set; }
-        public Cep CEP { get; set; }
+        public string Logradouro { get; private set; }
+        public string Numero { get; private set; }
+        public string Complemento { get; private set; }
+        public string Bairro { get; private set; }
+        public string Cidade { get; private set; }
+        public string Estado { get; private set; }
+        public Cep CEP { get; private set; }
 
         public Endereco(string logradouro, string numero, string complemento, string bairro, string cidade, string estado, Cep cep)
         {

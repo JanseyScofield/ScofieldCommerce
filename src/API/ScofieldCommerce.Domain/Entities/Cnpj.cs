@@ -4,7 +4,7 @@ namespace ScofieldCommerce.Domain.Entities
 {
     public class Cnpj
     {
-        public string Valor { get; set; }
+        public string Valor { get; private set; }
 
         public Cnpj(string valor)
         {
