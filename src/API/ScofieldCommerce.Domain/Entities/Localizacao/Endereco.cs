@@ -12,7 +12,7 @@ namespace ScofieldCommerce.Domain.Entities.Localizacao
         public string Estado { get; private set; } = null!;
         public Cep CEP { get; private set; } = null!;
 
-        private Endereco() { }
+        protected Endereco() { }
 
         public Endereco(string logradouro, string numero, string complemento, string bairro, string cidade, string estado, Cep cep)
         {
