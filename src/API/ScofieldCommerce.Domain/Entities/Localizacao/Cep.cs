@@ -45,5 +45,10 @@ namespace ScofieldCommerce.Domain.Entities.Localizacao
 
             return false;
         }
+
+        public override int GetHashCode()
+        {
+            return Valor.GetHashCode();
+        }
     }
 }

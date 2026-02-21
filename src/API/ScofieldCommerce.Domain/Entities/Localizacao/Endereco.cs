@@ -74,5 +74,10 @@ namespace ScofieldCommerce.Domain.Entities.Localizacao
 
             return false;
         }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Logradouro, Numero, Complemento, Bairro, Cidade, Estado, CEP);
+        }
     }
 }

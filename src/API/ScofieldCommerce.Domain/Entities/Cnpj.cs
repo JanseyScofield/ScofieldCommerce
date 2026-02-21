@@ -97,5 +97,10 @@ namespace ScofieldCommerce.Domain.Entities
 
             return false;
         }
+
+        public override int GetHashCode()
+        {
+            return Valor.GetHashCode();
+        }
     }
 }
