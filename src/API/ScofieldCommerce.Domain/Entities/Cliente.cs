@@ -15,7 +15,7 @@ namespace ScofieldCommerce.Domain.Entities
         public string TelefoneComprador { get; private set; } = null!;
 
         protected Cliente() { }
-        
+
         public Cliente
         (
             string razaoSocial, string nomeFantasia, Endereco endereco, Cnpj cnpj, string inscricaoEstadual, 
@@ -81,28 +81,23 @@ namespace ScofieldCommerce.Domain.Entities
             return $"{RazaoSocial} ({NomeFantasia}) - CNPJ: {Cnpj}, Endereço: {Endereco}, Comprador: {NomeComprador}, Telefone: {TelefoneComprador}";
         }
 
-        public override bool Equals(object? obj)
+      public override bool Equals(object? obj)
         {
             if (obj is not Cliente other)
-            {
                 return false;
-            }
-            return Id == other.Id &&
-                   RazaoSocial == other.RazaoSocial &&
-                   NomeFantasia == other.NomeFantasia &&
-                   Endereco.Equals(other.Endereco) &&
-                   Cnpj.Equals(other.Cnpj) &&
-                   InscricaoEstadual == other.InscricaoEstadual &&
-                   NomeComprador == other.NomeComprador &&
-                   TelefoneComprador == other.TelefoneComprador;
+
+            if (ReferenceEquals(this, other))
+                return true;
+
+            if (Id == 0 || other.Id == 0)
+                return false;
+
+            return Id == other.Id;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine
-            (
-                Id, RazaoSocial, NomeFantasia, Endereco, Cnpj, InscricaoEstadual, NomeComprador, TelefoneComprador
-            );
+            return Id == 0 ? base.GetHashCode() : Id.GetHashCode();
         }
     }
 }
