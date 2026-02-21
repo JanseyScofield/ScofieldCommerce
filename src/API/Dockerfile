@@ -1,9 +1,14 @@
+# Estágio 1: Build
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-COPY . .
+COPY ["ScofieldCommerce.sln", "./"]
+COPY ["ScofieldCommerce.API/ScofieldCommerce.API.csproj", "ScofieldCommerce.API/"]
+COPY ["ScofieldCommerce.Domain/ScofieldCommerce.Domain.csproj", "ScofieldCommerce.Domain/"]
 
 RUN dotnet restore "ScofieldCommerce.sln"
+
+COPY . .
 
 WORKDIR "/src/ScofieldCommerce.API"
 RUN dotnet publish "ScofieldCommerce.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
