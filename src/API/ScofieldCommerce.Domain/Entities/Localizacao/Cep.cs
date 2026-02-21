@@ -20,12 +20,15 @@ namespace ScofieldCommerce.Domain.Entities.Localizacao
 
         private void Validar(string valor)
         {
-                        if (string.IsNullOrWhiteSpace(valor))
-                throw new LocalizacaoException("O CEP não pode ser vazio.");
+            string mensagemErro = "O CEP é inválido.";
+            if (string.IsNullOrWhiteSpace(valor))
+                throw new LocalizacaoException(mensagemErro);
 
-            if (!System.Text.RegularExpressions.Regex.IsMatch(valor, @"^\d{5}-\d{3}$"))
-                throw new LocalizacaoException("O CEP deve estar no formato 00000-000.");
+            if (valor.Length != 8)
+                throw new LocalizacaoException(mensagemErro);
 
+            if (!valor.All(char.IsDigit))
+                    throw new LocalizacaoException(mensagemErro);
         }
     }
 }
