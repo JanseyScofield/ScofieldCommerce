@@ -32,5 +32,18 @@ namespace ScofieldCommerce.Domain.Entities.Localizacao
             if (!valor.All(char.IsDigit))
                     throw new LocalizacaoException(mensagemErro);
         }
+
+        public override string ToString()
+        {
+            return Valor;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is Cep other)
+                return Valor == other.Valor;
+
+            return false;
+        }
     }
 }

@@ -55,5 +55,24 @@ namespace ScofieldCommerce.Domain.Entities.Localizacao
             if (string.IsNullOrWhiteSpace(estado))
                 throw new LocalizacaoException("O estado não pode ser vazio.");
         }
+
+        public override string ToString()
+        {
+            return $"{Logradouro}, {Numero} - {Bairro}, {Cidade} - {Estado}, CEP: {CEP}";
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is Endereco other)
+                return Logradouro == other.Logradouro &&
+                       Numero == other.Numero &&
+                       Complemento == other.Complemento &&
+                       Bairro == other.Bairro &&
+                       Cidade == other.Cidade &&
+                       Estado == other.Estado &&
+                       CEP.Equals(other.CEP);
+
+            return false;
+        }
     }
 }

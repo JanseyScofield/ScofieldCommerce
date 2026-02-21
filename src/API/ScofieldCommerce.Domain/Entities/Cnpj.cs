@@ -84,5 +84,18 @@ namespace ScofieldCommerce.Domain.Entities
             }
             return soma;
         }
+
+        public override string ToString()
+        {
+            return Valor;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is Cnpj other)
+                return Valor == other.Valor;
+
+            return false;
+        }
     }
 }
