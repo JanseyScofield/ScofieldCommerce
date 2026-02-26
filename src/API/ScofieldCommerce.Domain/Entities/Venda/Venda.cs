@@ -69,12 +69,13 @@ namespace ScofieldCommerce.Domain.Entities.Venda
                    PrazoPagamentoDias == other.PrazoPagamentoDias &&
                    PossuiNotaFiscal == other.PossuiNotaFiscal &&
                    ValorTotal == other.ValorTotal &&
-                   ComissaoTotal == other.ComissaoTotal;
+                   ComissaoTotal == other.ComissaoTotal &&
+                   DataVenda == other.DataVenda;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(ClienteId, PrazoPagamentoDias, PossuiNotaFiscal, ValorTotal, ComissaoTotal);
+            return HashCode.Combine(ClienteId, PrazoPagamentoDias, PossuiNotaFiscal, ValorTotal, ComissaoTotal, DataVenda);
         }
     }
 }
