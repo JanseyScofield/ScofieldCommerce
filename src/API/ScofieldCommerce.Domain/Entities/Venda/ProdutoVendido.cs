@@ -62,8 +62,7 @@ namespace ScofieldCommerce.Domain.Entities.Venda
         {
             if (obj is ProdutoVendido other)
             {
-                return Id == other.Id &&
-                       VendaId == other.VendaId &&
+                return VendaId == other.VendaId &&
                        ProdutoId == other.ProdutoId &&
                        Quantidade == other.Quantidade &&
                        ValorUnitario == other.ValorUnitario;
