@@ -1,4 +1,4 @@
-using ScofieldCommerce.Domain.Exceptions;
+using ScofieldCommerce.Domain.Common;
 
 namespace ScofieldCommerce.Domain.Entities.Venda
 {
@@ -15,40 +15,43 @@ namespace ScofieldCommerce.Domain.Entities.Venda
 
         protected ProdutoVendido() { }
 
-        public ProdutoVendido(long vendaId, Produto produto, int quantidade, decimal valorUnitario)
+        private ProdutoVendido(long vendaId, Produto produto, int quantidade, decimal valorUnitario)
         {
-            Validar(vendaId, produto, quantidade, valorUnitario);
             VendaId = vendaId;
             ProdutoId = produto.Id;
             Quantidade = quantidade;
             ValorUnitario = valorUnitario;
         }
 
-        public void Atualizar(Produto produto, int quantidade, decimal valorUnitario)
+        public static Result<ProdutoVendido> Criar(long vendaId, Produto produto, int quantidade, decimal valorUnitario)
         {
-            Validar(VendaId, produto, quantidade, valorUnitario);
+            var validacao = Validar(produto, quantidade, valorUnitario);
+            if (!validacao.IsSuccess) return Result<ProdutoVendido>.Error(validacao.ErrorMessage!);
+
+            return Result<ProdutoVendido>.Ok(new ProdutoVendido(vendaId, produto, quantidade, valorUnitario));
+        }
+
+        public Result<bool> Atualizar(Produto produto, int quantidade, decimal valorUnitario)
+        {
+            var validacao = Validar(produto, quantidade, valorUnitario);
+            if (!validacao.IsSuccess) return Result<bool>.Error(validacao.ErrorMessage!);
+
             ProdutoId = produto.Id;
             Quantidade = quantidade;
             ValorUnitario = valorUnitario;
+
+            return Result<bool>.Ok(true);
         }
 
-        private void Validar(long vendaId, Produto produto, int quantidade, decimal valorUnitario)
+        private static Result<bool> Validar(Produto produto, int quantidade, decimal valorUnitario)
         {
+            if (produto.Id <= 0) return Result<bool>.Error("Produto Id deve ser maior que zero.");
+            if (quantidade <= 0) return Result<bool>.Error("Quantidade deve ser maior que zero.");
+            if (valorUnitario <= 0) return Result<bool>.Error("Valor unitario deve ser maior que zero.");
+            if (valorUnitario < produto.PrecoMinimo) return Result<bool>.Error("Valor unitario não pode ser menor que o preço mínimo do produto.");
+            if (valorUnitario > produto.PrecoMaximo) return Result<bool>.Error("Valor unitario não pode ser maior que o preço máximo do produto.");
 
-            if (produto.Id <= 0)
-                throw new VendaException("Produto Id deve ser maior que zero.");
-
-            if (quantidade <= 0)
-                throw new VendaException("Quantidade deve ser maior que zero.");
-
-            if (valorUnitario <= 0)
-                throw new VendaException("Valor unitario deve ser maior que zero.");
-            
-            if(valorUnitario < produto.PrecoMinimo)
-                throw new VendaException("Valor unitario não pode ser menor que o preço mínimo do produto.");
-
-            if(valorUnitario > produto.PrecoMaximo)
-                throw new VendaException("Valor unitario não pode ser maior que o preço máximo do produto.");
+            return Result<bool>.Ok(true);
         }
 
         public override string ToString()
@@ -72,6 +75,5 @@ namespace ScofieldCommerce.Domain.Entities.Venda
         {
             return HashCode.Combine(Id, VendaId, ProdutoId, Quantidade, ValorUnitario);
         }
-        
     }
 }

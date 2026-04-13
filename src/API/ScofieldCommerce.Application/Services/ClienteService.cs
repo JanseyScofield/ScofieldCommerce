@@ -1,7 +1,9 @@
+using System;
 using System.Threading.Tasks;
 using ScofieldCommerce.Application.DTOs;
 using ScofieldCommerce.Application.Interfaces.Repositories;
 using ScofieldCommerce.Application.Interfaces.Services;
+using ScofieldCommerce.Domain.Common;
 using ScofieldCommerce.Domain.Entities;
 using ScofieldCommerce.Domain.Entities.Localizacao;
 
@@ -18,33 +20,48 @@ namespace ScofieldCommerce.Application.Services
             _uow = uow;
         }
 
-        public async Task CadastrarAsync(CriarClienteDto dto)
+        public async Task<Result<Cliente>> CadastrarAsync(CriarClienteDto dto)
         {
-            var cep = new Cep(dto.Cep);
-            var endereco = new Endereco(
-                dto.Logradouro,
-                dto.Numero,
-                dto.Complemento,
-                dto.Bairro,
-                dto.Cidade,
-                dto.Estado,
-                cep
-            );
-            
-            var cnpj = new Cnpj(dto.Cnpj);
+            try
+            {
+                var cepResult = Cep.Criar(dto.Cep);
+                if (!cepResult.IsSuccess) return Result<Cliente>.Error(cepResult.ErrorMessage!);
 
-            var cliente = new Cliente(
-                dto.RazaoSocial, 
-                dto.NomeFantasia, 
-                endereco, 
-                cnpj, 
-                dto.InscricaoEstadual, 
-                dto.NomeComprador, 
-                dto.TelefoneComprador
-            );
+                var enderecoResult = Endereco.Criar(
+                    dto.Logradouro,
+                    dto.Numero,
+                    dto.Complemento,
+                    dto.Bairro,
+                    dto.Cidade,
+                    dto.Estado,
+                    cepResult.Data!
+                );
+                if (!enderecoResult.IsSuccess) return Result<Cliente>.Error(enderecoResult.ErrorMessage!);
+                
+                var cnpjResult = Cnpj.Criar(dto.Cnpj);
+                if (!cnpjResult.IsSuccess) return Result<Cliente>.Error(cnpjResult.ErrorMessage!);
 
-            await _clienteRepository.AdicionarAsync(cliente);
-            await _uow.CommitAsync();
+                var clienteResult = Cliente.Criar(
+                    dto.RazaoSocial, 
+                    dto.NomeFantasia, 
+                    enderecoResult.Data!, 
+                    cnpjResult.Data!, 
+                    dto.InscricaoEstadual, 
+                    dto.NomeComprador, 
+                    dto.TelefoneComprador
+                );
+
+                if (!clienteResult.IsSuccess) return Result<Cliente>.Error(clienteResult.ErrorMessage!);
+
+                await _clienteRepository.AdicionarAsync(clienteResult.Data!);
+                await _uow.CommitAsync();
+
+                return Result<Cliente>.Ok(clienteResult.Data!);
+            }
+            catch(Exception ex)
+            {
+                return Result<Cliente>.Error($"Erro interno ao cadastrar cliente: {ex.Message}");
+            }
         }
     }
 }

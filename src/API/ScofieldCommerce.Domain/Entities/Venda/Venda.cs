@@ -1,4 +1,4 @@
-using ScofieldCommerce.Domain.Exceptions;
+using ScofieldCommerce.Domain.Common;
 using ScofieldCommerce.Domain.Strategies;
 
 namespace ScofieldCommerce.Domain.Entities.Venda
@@ -19,44 +19,59 @@ namespace ScofieldCommerce.Domain.Entities.Venda
         public IReadOnlyCollection<ProdutoVendido> ProdutosVendidos => _produtosVendidos.AsReadOnly();
         protected Venda() { }
 
-        public Venda(long clienteId, sbyte prazoPagamentoDias, bool possuiNotaFiscal, DateTime dataVenda)
+        private Venda(long clienteId, sbyte prazoPagamentoDias, bool possuiNotaFiscal, DateTime dataVenda)
         {
-            Validar(clienteId, prazoPagamentoDias, dataVenda);
             ClienteId = clienteId;
             PrazoPagamentoDias = prazoPagamentoDias;
             PossuiNotaFiscal = possuiNotaFiscal;
             DataVenda = dataVenda;
         }
 
-        public void Atualizar(long clienteId, sbyte prazoPagamentoDias, bool possuiNotaFiscal, DateTime dataVenda)
+        public static Result<Venda> Criar(long clienteId, sbyte prazoPagamentoDias, bool possuiNotaFiscal, DateTime dataVenda)
         {
-            Validar(clienteId, prazoPagamentoDias, dataVenda);
+            var validacao = Validar(clienteId, prazoPagamentoDias, dataVenda);
+            if (!validacao.IsSuccess) return Result<Venda>.Error(validacao.ErrorMessage!);
+
+            return Result<Venda>.Ok(new Venda(clienteId, prazoPagamentoDias, possuiNotaFiscal, dataVenda));
+        }
+
+        public Result<bool> Atualizar(long clienteId, sbyte prazoPagamentoDias, bool possuiNotaFiscal, DateTime dataVenda)
+        {
+            var validacao = Validar(clienteId, prazoPagamentoDias, dataVenda);
+            if (!validacao.IsSuccess) return Result<bool>.Error(validacao.ErrorMessage!);
+
             ClienteId = clienteId;
             PrazoPagamentoDias = prazoPagamentoDias;
             PossuiNotaFiscal = possuiNotaFiscal;
             DataVenda = dataVenda;
+
+            return Result<bool>.Ok(true);
         }
 
-        public void AdicionarProduto(Produto produto, int quantidade, decimal valorUnitario, ICommissionStrategy strategy)
+        public Result<bool> AdicionarProduto(Produto produto, int quantidade, decimal valorUnitario, ICommissionStrategy strategy)
         {
-            var produtoVendido = new ProdutoVendido(Id, produto, quantidade, valorUnitario);
-            _produtosVendidos.Add(produtoVendido);
+            var produtoVendidoResult = ProdutoVendido.Criar(Id, produto, quantidade, valorUnitario);
+            if (!produtoVendidoResult.IsSuccess)
+                return Result<bool>.Error(produtoVendidoResult.ErrorMessage!);
+
+            _produtosVendidos.Add(produtoVendidoResult.Data!);
             
             ValorTotal += valorUnitario * quantidade;
             ComissaoTotal += strategy.CalcularComissao(valorUnitario, quantidade);
+
+            return Result<bool>.Ok(true);
         }
 
-        private void Validar(long clienteId, sbyte prazoPagamentoDias, DateTime dataVenda)
+        private static Result<bool> Validar(long clienteId, sbyte prazoPagamentoDias, DateTime dataVenda)
         {
-            if (clienteId <= 0)
-                throw new VendaException("Cliente Id deve ser maior que zero.");
+            if (clienteId <= 0) return Result<bool>.Error("Cliente Id deve ser maior que zero.");
+            if (prazoPagamentoDias < 0) return Result<bool>.Error("Prazo de pagamento em dias não pode ser negativo.");
+            if (dataVenda > DateTime.Now) return Result<bool>.Error("Data da venda não pode ser no futuro.");
 
-            if (prazoPagamentoDias < 0)
-                throw new VendaException("Prazo de pagamento em dias não pode ser negativo.");
-
-            if (dataVenda > DateTime.Now)
-                throw new VendaException("Data da venda não pode ser no futuro.");
+            return Result<bool>.Ok(true);
         }
+
+
 
         public override string ToString()
         {

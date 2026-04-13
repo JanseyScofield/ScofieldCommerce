@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using ScofieldCommerce.Application.DTOs;
 using ScofieldCommerce.Application.Interfaces.Repositories;
 using ScofieldCommerce.Application.Interfaces.Services;
-using ScofieldCommerce.Domain.Strategies;
+using ScofieldCommerce.Domain.Common;
 using ScofieldCommerce.Domain.Entities.Venda;
-using ScofieldCommerce.Domain.Exceptions;
+using ScofieldCommerce.Domain.Strategies;
 
 namespace ScofieldCommerce.Application.Services
 {
@@ -33,41 +33,60 @@ namespace ScofieldCommerce.Application.Services
             _commissionFactory = commissionFactory;
         }
 
-        public async Task RegistrarVendaAsync(RegistrarVendaDto dto)
+        public async Task<Result<Venda>> RegistrarVendaAsync(RegistrarVendaDto dto)
         {
-            var cliente = await _clienteRepository.ObterPorIdAsync(dto.ClienteId);
-            if (cliente == null)
-                throw new Exception("Cliente não encontrado.");
-
-            var venda = new Venda(
-                dto.ClienteId,
-                dto.PrazoPagamentoDias,
-                dto.PossuiNotaFiscal,
-                DateTime.Now
-            );
-
-            foreach (var item in dto.Produtos)
+            try
             {
-                var produto = await _produtoRepository.ObterPorIdAsync(item.ProdutoId);
-                if (produto == null)
-                    throw new Exception($"Produto {item.ProdutoId} não encontrado.");
+                var cliente = await _clienteRepository.ObterPorIdAsync(dto.ClienteId);
+                if (cliente == null) return Result<Venda>.Error("Cliente não encontrado.");
 
-                var strategy = _commissionFactory.GetStrategy(produto.RegraComissaoId);
-                venda.AdicionarProduto(produto, item.Quantidade, item.ValorUnitario, strategy);
+                var vendaResult = Venda.Criar(
+                    dto.ClienteId,
+                    dto.PrazoPagamentoDias,
+                    dto.PossuiNotaFiscal,
+                    DateTime.Now
+                );
+
+                if (!vendaResult.IsSuccess) return Result<Venda>.Error(vendaResult.ErrorMessage!);
+                
+                var venda = vendaResult.Data!;
+
+                foreach (var item in dto.Produtos)
+                {
+                    var produto = await _produtoRepository.ObterPorIdAsync(item.ProdutoId);
+                    if (produto == null) return Result<Venda>.Error($"Produto {item.ProdutoId} não encontrado.");
+
+                    var strategy = _commissionFactory.GetStrategy(produto.RegraComissaoId);
+                    
+                    var adicionarResult = venda.AdicionarProduto(produto, item.Quantidade, item.ValorUnitario, strategy);
+                    if (!adicionarResult.IsSuccess) return Result<Venda>.Error(adicionarResult.ErrorMessage!);
+                }
+
+                if (venda.ValorTotal <= 0) return Result<Venda>.Error("Valor total deve ser maior que zero.");
+
+                await _vendaRepository.AdicionarAsync(venda);
+                await _uow.CommitAsync();
+
+                return Result<Venda>.Ok(venda);
             }
-
-            if (venda.ValorTotal <= 0)
-                 throw new Exception("Valor total deve ser maior que zero.");
-
-            await _vendaRepository.AdicionarAsync(venda);
-            await _uow.CommitAsync();
+            catch(Exception ex)
+            {
+                return Result<Venda>.Error($"Erro interno ao registrar venda: {ex.Message}");
+            }
         }
 
-        public async Task<decimal> ObterAjudaDeCustoGlobalAsync()
+        public async Task<Result<decimal>> ObterAjudaDeCustoGlobalAsync()
         {
-            var totalVendido = await _vendaRepository.ObterTotalVendasGlobalAsync();
-            var ajudaCusto = Math.Floor(totalVendido / 10000m) * 100m;
-            return ajudaCusto;
+            try
+            {
+                var totalVendido = await _vendaRepository.ObterTotalVendasGlobalAsync();
+                var ajudaCusto = Math.Floor(totalVendido / 10000m) * 100m;
+                return Result<decimal>.Ok(ajudaCusto);
+            }
+            catch(Exception ex)
+            {
+                return Result<decimal>.Error($"Erro interno ao obter ajuda de custo: {ex.Message}");
+            }
         }
     }
 }

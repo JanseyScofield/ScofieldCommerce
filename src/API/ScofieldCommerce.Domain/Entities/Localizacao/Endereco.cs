@@ -1,4 +1,4 @@
-using ScofieldCommerce.Domain.Entities.Exceptions;
+using ScofieldCommerce.Domain.Common;
 
 namespace ScofieldCommerce.Domain.Entities.Localizacao
 {
@@ -14,9 +14,8 @@ namespace ScofieldCommerce.Domain.Entities.Localizacao
 
         protected Endereco() { }
 
-        public Endereco(string logradouro, string numero, string complemento, string bairro, string cidade, string estado, Cep cep)
+        private Endereco(string logradouro, string numero, string complemento, string bairro, string cidade, string estado, Cep cep)
         {
-            Validar(logradouro, numero, complemento, bairro, cidade, estado);
             Logradouro = logradouro;
             Numero = numero;
             Complemento = complemento;
@@ -26,9 +25,19 @@ namespace ScofieldCommerce.Domain.Entities.Localizacao
             CEP = cep;
         }
 
-        public void Atualizar(string logradouro, string numero, string complemento, string bairro, string cidade, string estado, Cep cep)
+        public static Result<Endereco> Criar(string logradouro, string numero, string complemento, string bairro, string cidade, string estado, Cep cep)
         {
-            Validar(logradouro, numero, complemento, bairro, cidade, estado);
+            var validacao = Validar(logradouro, numero, complemento, bairro, cidade, estado);
+            if (!validacao.IsSuccess) return Result<Endereco>.Error(validacao.ErrorMessage!);
+
+            return Result<Endereco>.Ok(new Endereco(logradouro, numero, complemento, bairro, cidade, estado, cep));
+        }
+
+        public Result<bool> Atualizar(string logradouro, string numero, string complemento, string bairro, string cidade, string estado, Cep cep)
+        {
+            var validacao = Validar(logradouro, numero, complemento, bairro, cidade, estado);
+            if (!validacao.IsSuccess) return Result<bool>.Error(validacao.ErrorMessage!);
+
             Logradouro = logradouro;
             Numero = numero;
             Complemento = complemento;
@@ -36,24 +45,19 @@ namespace ScofieldCommerce.Domain.Entities.Localizacao
             Cidade = cidade;
             Estado = estado;
             CEP = cep;
+
+            return Result<bool>.Ok(true);
         }
 
-        private void Validar(string logradouro, string numero, string complemento, string bairro, string cidade, string estado)
+        private static Result<bool> Validar(string logradouro, string numero, string complemento, string bairro, string cidade, string estado)
         {
-            if (string.IsNullOrWhiteSpace(logradouro))
-                throw new LocalizacaoException("O logradouro não pode ser vazio.");
+            if (string.IsNullOrWhiteSpace(logradouro)) return Result<bool>.Error("O logradouro não pode ser vazio.");
+            if (string.IsNullOrWhiteSpace(numero)) return Result<bool>.Error("O número não pode ser vazio.");
+            if (string.IsNullOrWhiteSpace(bairro)) return Result<bool>.Error("O bairro não pode ser vazio.");
+            if (string.IsNullOrWhiteSpace(cidade)) return Result<bool>.Error("A cidade não pode ser vazia.");
+            if (string.IsNullOrWhiteSpace(estado)) return Result<bool>.Error("O estado não pode ser vazio.");
 
-            if (string.IsNullOrWhiteSpace(numero))
-                throw new LocalizacaoException("O número não pode ser vazio.");
-
-            if (string.IsNullOrWhiteSpace(bairro))
-                throw new LocalizacaoException("O bairro não pode ser vazio.");
-
-            if (string.IsNullOrWhiteSpace(cidade))
-                throw new LocalizacaoException("A cidade não pode ser vazia.");
-
-            if (string.IsNullOrWhiteSpace(estado))
-                throw new LocalizacaoException("O estado não pode ser vazio.");
+            return Result<bool>.Ok(true);
         }
 
         public override string ToString()

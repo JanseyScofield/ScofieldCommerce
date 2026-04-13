@@ -16,7 +16,10 @@ namespace ScofieldCommerce.API.Endpoints
 
             group.MapPost("/", async ([FromBody] RegistrarVendaDto dto, IVendaService service) =>
             {
-                await service.RegistrarVendaAsync(dto);
+                var result = await service.RegistrarVendaAsync(dto);
+                if (!result.IsSuccess)
+                    return Results.BadRequest(new { Erro = result.ErrorMessage });
+
                 return Results.Ok(new { Mensagem = "Venda registrada com sucesso." });
             });
             
@@ -27,8 +30,11 @@ namespace ScofieldCommerce.API.Endpoints
 
             group.MapGet("/ajuda-custo", async (IVendaService service) =>
             {
-                var ajuda = await service.ObterAjudaDeCustoGlobalAsync();
-                return Results.Ok(new { AjudaDeCustoAcumulada = ajuda });
+                var result = await service.ObterAjudaDeCustoGlobalAsync();
+                if (!result.IsSuccess)
+                    return Results.BadRequest(new { Erro = result.ErrorMessage });
+
+                return Results.Ok(new { AjudaDeCustoAcumulada = result.Data });
             });
         }
     }

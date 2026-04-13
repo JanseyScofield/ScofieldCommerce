@@ -31,10 +31,11 @@ namespace ScofieldCommerce.Tests.Application.Services
 
             mockFactory.Setup(f => f.GetStrategy(1)).Returns(strategyBobina.Object);
 
-            var cliente = new Cliente("Razao", "Fantasia", new Endereco("Rua", "1", "", "B", "C", "ES", new Cep("12345678")), new Cnpj("00000000000191"), "1", "N", "1");
-            mockClienteRepo.Setup(c => c.ObterPorIdAsync(1)).ReturnsAsync(cliente);
+            var clienteResult = Cliente.Criar("Razao", "Fantasia", Endereco.Criar("Rua", "1", "", "B", "C", "ES", Cep.Criar("12345678").Data!).Data!, Cnpj.Criar("60409075000152").Data!, "1", "N", "11999999999");
+            mockClienteRepo.Setup(c => c.ObterPorIdAsync(1)).ReturnsAsync(clienteResult.Data!);
 
-            var produto = new Produto("Bobina 2kg", "Desc", 100.0m, 200.0m, 1);
+            var produtoResult = Produto.Criar("Bobina 2kg", "Desc", 100.0m, 200.0m, 1);
+            var produto = produtoResult.Data!;
             typeof(Produto).GetProperty("Id")!.SetValue(produto, 1L);
             mockProdutoRepo.Setup(p => p.ObterPorIdAsync(1)).ReturnsAsync(produto);
 
@@ -50,9 +51,10 @@ namespace ScofieldCommerce.Tests.Application.Services
             var service = new VendaService(mockVendaRepo.Object, mockProdutoRepo.Object, mockClienteRepo.Object, mockUow.Object, mockFactory.Object);
 
             // Act
-            await service.RegistrarVendaAsync(dto);
+            var result = await service.RegistrarVendaAsync(dto);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             mockVendaRepo.Verify(v => v.AdicionarAsync(It.Is<Venda>(x => x.ValorTotal == 300.0m && x.ComissaoTotal == 15.0m)), Times.Once);
             mockUow.Verify(u => u.CommitAsync(), Times.Once);
         }
@@ -66,11 +68,12 @@ namespace ScofieldCommerce.Tests.Application.Services
             var service = new VendaService(mockVendaRepo.Object, null!, null!, null!, null!);
 
             // Act
-            var ajuda = await service.ObterAjudaDeCustoGlobalAsync();
+            var result = await service.ObterAjudaDeCustoGlobalAsync();
 
             // Assert
             // 25.000 -> 2 x 10.000 = 200 reais
-            ajuda.Should().Be(200.0m);
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().Be(200.0m);
         }
     }
 }

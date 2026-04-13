@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using FluentAssertions;
 using Moq;
 using ScofieldCommerce.Application.DTOs;
 using ScofieldCommerce.Application.Interfaces.Repositories;
@@ -29,9 +30,10 @@ namespace ScofieldCommerce.Tests.Application.Services
             };
 
             // Act
-            await service.CadastrarAsync(dto);
+            var result = await service.CadastrarAsync(dto);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             mockProdutoRepo.Verify(r => r.AdicionarAsync(It.Is<Produto>(p => 
                 p.Nome == dto.Nome && 
                 p.PrecoMinimo == dto.PrecoMinimo)), Times.Once);

@@ -1,5 +1,5 @@
+using ScofieldCommerce.Domain.Common;
 using ScofieldCommerce.Domain.Entities.Localizacao;
-using ScofieldCommerce.Domain.Entities.Exceptions;
 
 namespace ScofieldCommerce.Domain.Entities
 {
@@ -16,13 +16,12 @@ namespace ScofieldCommerce.Domain.Entities
 
         protected Cliente() { }
 
-        public Cliente
+        private Cliente
         (
             string razaoSocial, string nomeFantasia, Endereco endereco, Cnpj cnpj, string inscricaoEstadual, 
             string nomeComprador, string telefoneComprador
         )
         {
-            Validar(razaoSocial, nomeFantasia, endereco, cnpj, inscricaoEstadual, nomeComprador, telefoneComprador);
             RazaoSocial = razaoSocial;
             NomeFantasia = nomeFantasia;
             Endereco = endereco;
@@ -32,13 +31,27 @@ namespace ScofieldCommerce.Domain.Entities
             TelefoneComprador = telefoneComprador;
         }
 
-        public void Atualizar
+        public static Result<Cliente> Criar
         (
             string razaoSocial, string nomeFantasia, Endereco endereco, Cnpj cnpj, string inscricaoEstadual, 
             string nomeComprador, string telefoneComprador
         )
         {
-            Validar(razaoSocial, nomeFantasia, endereco, cnpj, inscricaoEstadual, nomeComprador, telefoneComprador);
+            var validacao = Validar(razaoSocial, nomeFantasia, endereco, cnpj, inscricaoEstadual, nomeComprador, telefoneComprador);
+            if (!validacao.IsSuccess) return Result<Cliente>.Error(validacao.ErrorMessage!);
+
+            return Result<Cliente>.Ok(new Cliente(razaoSocial, nomeFantasia, endereco, cnpj, inscricaoEstadual, nomeComprador, telefoneComprador));
+        }
+
+        public Result<bool> Atualizar
+        (
+            string razaoSocial, string nomeFantasia, Endereco endereco, Cnpj cnpj, string inscricaoEstadual, 
+            string nomeComprador, string telefoneComprador
+        )
+        {
+            var validacao = Validar(razaoSocial, nomeFantasia, endereco, cnpj, inscricaoEstadual, nomeComprador, telefoneComprador);
+            if (!validacao.IsSuccess) return Result<bool>.Error(validacao.ErrorMessage!);
+
             RazaoSocial = razaoSocial;
             NomeFantasia = nomeFantasia;
             Endereco = endereco;
@@ -46,34 +59,25 @@ namespace ScofieldCommerce.Domain.Entities
             InscricaoEstadual = inscricaoEstadual;
             NomeComprador = nomeComprador;
             TelefoneComprador = telefoneComprador;
+
+            return Result<bool>.Ok(true);
         }
 
-        private void Validar
+        private static Result<bool> Validar
         (
             string razaoSocial, string nomeFantasia, Endereco endereco, Cnpj cnpj, string inscricaoEstadual, 
             string nomeComprador, string telefoneComprador
         )
         {
-            if (string.IsNullOrWhiteSpace(razaoSocial))
-                throw new ClienteException("A razão social não pode ser vazia.");
+            if (string.IsNullOrWhiteSpace(razaoSocial)) return Result<bool>.Error("A razão social não pode ser vazia.");
+            if (string.IsNullOrWhiteSpace(nomeFantasia)) return Result<bool>.Error("O nome fantasia não pode ser vazio.");
+            if (endereco == null) return Result<bool>.Error("O endereço é obrigatório.");
+            if (cnpj == null) return Result<bool>.Error("O CNPJ é obrigatório.");
+            if (string.IsNullOrWhiteSpace(inscricaoEstadual)) return Result<bool>.Error("A inscrição estadual não pode ser vazia.");
+            if (string.IsNullOrWhiteSpace(nomeComprador)) return Result<bool>.Error("O nome do comprador não pode ser vazio.");
+            if (string.IsNullOrWhiteSpace(telefoneComprador)) return Result<bool>.Error("O telefone do comprador não pode ser vazio.");
 
-            if (string.IsNullOrWhiteSpace(nomeFantasia))
-                throw new ClienteException("O nome fantasia não pode ser vazio.");
-
-            if (endereco == null)
-                throw new ClienteException("O endereço é obrigatório.");
-
-            if (cnpj == null)
-                throw new ClienteException("O CNPJ é obrigatório.");
-
-            if (string.IsNullOrWhiteSpace(inscricaoEstadual))
-                throw new ClienteException("A inscrição estadual não pode ser vazia.");
-
-            if (string.IsNullOrWhiteSpace(nomeComprador))
-                throw new ClienteException("O nome do comprador não pode ser vazio.");
-
-            if (string.IsNullOrWhiteSpace(telefoneComprador))
-                throw new ClienteException("O telefone do comprador não pode ser vazio.");
+            return Result<bool>.Ok(true);
         }
 
         public override string ToString()

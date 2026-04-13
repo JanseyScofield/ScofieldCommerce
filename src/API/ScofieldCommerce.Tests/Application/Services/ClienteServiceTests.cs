@@ -39,9 +39,10 @@ namespace ScofieldCommerce.Tests.Application.Services
             };
 
             // Act
-            await service.CadastrarAsync(dto);
+            var result = await service.CadastrarAsync(dto);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             mockClienteRepo.Verify(r => r.AdicionarAsync(It.Is<Cliente>(c => 
                 c.RazaoSocial == dto.RazaoSocial && 
                 c.Cnpj.Valor == dto.Cnpj)), Times.Once);
@@ -76,10 +77,11 @@ namespace ScofieldCommerce.Tests.Application.Services
             };
 
             // Act
-            Func<Task> function = async () => await service.CadastrarAsync(dto);
+            var result = await service.CadastrarAsync(dto);
 
             // Assert
-            await function.Should().ThrowAsync<Exception>().WithMessage("O CNPJ é inválido.");
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Be("O CNPJ é inválido.");
         }
     }
 }

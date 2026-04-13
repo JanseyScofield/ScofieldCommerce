@@ -1,4 +1,4 @@
-using ScofieldCommerce.Domain.Entities.Exceptions;
+using ScofieldCommerce.Domain.Common;
 
 namespace ScofieldCommerce.Domain.Entities
 {
@@ -7,39 +7,39 @@ namespace ScofieldCommerce.Domain.Entities
         public string Valor { get; private set; } = null!;
 
         protected Cnpj() { }
-        public Cnpj(string valor)
+        private Cnpj(string valor)
         {
-            Validar(valor);
             Valor = valor;
         }
 
-        public void Atualizar(string valor)
+        public static Result<Cnpj> Criar(string valor)
         {
-            Validar(valor);
-            Valor = valor;
+            var validacao = Validar(valor);
+            if (!validacao.IsSuccess) return Result<Cnpj>.Error(validacao.ErrorMessage!);
+
+            return Result<Cnpj>.Ok(new Cnpj(valor));
         }
 
-        private void Validar(string valor)
+        public Result<bool> Atualizar(string valor)
+        {
+            var validacao = Validar(valor);
+            if (!validacao.IsSuccess) return Result<bool>.Error(validacao.ErrorMessage!);
+
+            Valor = valor;
+            return Result<bool>.Ok(true);
+        }
+
+        private static Result<bool> Validar(string valor)
         {
             string mensagemErro = "O CNPJ é inválido.";
 
-            if (string.IsNullOrWhiteSpace(valor))
-                throw new ClienteException(mensagemErro);
+            if (string.IsNullOrWhiteSpace(valor) || valor.Length != 14 || !valor.All(char.IsDigit) || TodosDigitosIguais(valor) || !ValidarDigitosVerificadores(valor))
+                return Result<bool>.Error(mensagemErro);
 
-            if (valor.Length != 14)
-                throw new ClienteException(mensagemErro);
-
-            if (!valor.All(char.IsDigit))
-                throw new ClienteException(mensagemErro);
-
-            if (TodosDigitosIguais(valor))
-                throw new ClienteException(mensagemErro);
-            
-            if (!ValidarDigitosVerificadores(valor))
-                throw new ClienteException(mensagemErro);
+            return Result<bool>.Ok(true);
         }
 
-        private bool TodosDigitosIguais(string valor)
+        private static bool TodosDigitosIguais(string valor)
         {
             char primeiroDigito = valor[0];
             foreach (char digito in valor)
@@ -52,7 +52,7 @@ namespace ScofieldCommerce.Domain.Entities
             return true;
         }
 
-        private bool ValidarDigitosVerificadores(string valor)
+        private static bool ValidarDigitosVerificadores(string valor)
         {
             int[] multiplicadores1 = { 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
             int[] multiplicadores2 = { 6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
@@ -75,7 +75,7 @@ namespace ScofieldCommerce.Domain.Entities
             return true;
         }
 
-        private int CalcularSomaDigitos(string valor, int[] multiplicadores)
+        private static int CalcularSomaDigitos(string valor, int[] multiplicadores)
         {
             int soma = 0;
             for (int i = 0; i < multiplicadores.Length; i++)

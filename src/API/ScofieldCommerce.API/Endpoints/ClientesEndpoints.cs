@@ -16,7 +16,10 @@ namespace ScofieldCommerce.API.Endpoints
             
             group.MapPost("/", async ([FromBody] CriarClienteDto dto, IClienteService service) =>
             {
-                await service.CadastrarAsync(dto);
+                var result = await service.CadastrarAsync(dto);
+                if (!result.IsSuccess)
+                    return Results.BadRequest(new { Erro = result.ErrorMessage });
+
                 return Results.Ok(new { Mensagem = "Cliente cadastrado com sucesso." });
             });
 

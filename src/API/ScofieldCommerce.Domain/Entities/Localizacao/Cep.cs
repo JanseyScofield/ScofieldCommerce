@@ -1,4 +1,4 @@
-using ScofieldCommerce.Domain.Entities.Exceptions;
+using ScofieldCommerce.Domain.Common;
 
 namespace ScofieldCommerce.Domain.Entities.Localizacao
 {
@@ -8,29 +8,35 @@ namespace ScofieldCommerce.Domain.Entities.Localizacao
 
         protected Cep() { }
 
-        public Cep(string valor)
+        private Cep(string valor)
         {
-            Validar(valor);
             Valor = valor;
         }
 
-        public void Atualizar(string novoValor)
+        public static Result<Cep> Criar(string valor)
         {
-            Validar(novoValor);
-            Valor = novoValor;
+            var validacao = Validar(valor);
+            if (!validacao.IsSuccess) return Result<Cep>.Error(validacao.ErrorMessage!);
+
+            return Result<Cep>.Ok(new Cep(valor));
         }
 
-        private void Validar(string valor)
+        public Result<bool> Atualizar(string novoValor)
+        {
+            var validacao = Validar(novoValor);
+            if (!validacao.IsSuccess) return Result<bool>.Error(validacao.ErrorMessage!);
+
+            Valor = novoValor;
+            return Result<bool>.Ok(true);
+        }
+
+        private static Result<bool> Validar(string valor)
         {
             string mensagemErro = "O CEP é inválido.";
-            if (string.IsNullOrWhiteSpace(valor))
-                throw new LocalizacaoException(mensagemErro);
+            if (string.IsNullOrWhiteSpace(valor) || valor.Length != 8 || !valor.All(char.IsDigit))
+                return Result<bool>.Error(mensagemErro);
 
-            if (valor.Length != 8)
-                throw new LocalizacaoException(mensagemErro);
-
-            if (!valor.All(char.IsDigit))
-                    throw new LocalizacaoException(mensagemErro);
+            return Result<bool>.Ok(true);
         }
 
         public override string ToString()

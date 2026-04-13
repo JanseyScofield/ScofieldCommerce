@@ -1,4 +1,4 @@
-using ScofieldCommerce.Domain.Exceptions;
+using ScofieldCommerce.Domain.Common;
 
 namespace ScofieldCommerce.Domain.Entities
 {
@@ -13,9 +13,8 @@ namespace ScofieldCommerce.Domain.Entities
 
         protected Produto() { }
 
-        public Produto(string nome, string descricao, decimal precoMinimo, decimal precoMaximo, byte regraComissaoId)
+        private Produto(string nome, string descricao, decimal precoMinimo, decimal precoMaximo, byte regraComissaoId)
         {
-            Validar(nome, descricao, precoMinimo, precoMaximo, regraComissaoId);
             Nome = nome;
             Descricao = descricao;
             PrecoMinimo = precoMinimo;
@@ -23,35 +22,38 @@ namespace ScofieldCommerce.Domain.Entities
             RegraComissaoId = regraComissaoId;
         }
 
-        public void Atualizar(string nome, string descricao, decimal precoMinimo, decimal precoMaximo, byte regraComissaoId)
+        public static Result<Produto> Criar(string nome, string descricao, decimal precoMinimo, decimal precoMaximo, byte regraComissaoId)
         {
-            Validar(nome, descricao, precoMinimo, precoMaximo, regraComissaoId);
+            var validacao = Validar(nome, descricao, precoMinimo, precoMaximo, regraComissaoId);
+            if (!validacao.IsSuccess) return Result<Produto>.Error(validacao.ErrorMessage!);
+
+            return Result<Produto>.Ok(new Produto(nome, descricao, precoMinimo, precoMaximo, regraComissaoId));
+        }
+
+        public Result<bool> Atualizar(string nome, string descricao, decimal precoMinimo, decimal precoMaximo, byte regraComissaoId)
+        {
+            var validacao = Validar(nome, descricao, precoMinimo, precoMaximo, regraComissaoId);
+            if (!validacao.IsSuccess) return Result<bool>.Error(validacao.ErrorMessage!);
+
             Nome = nome;
             Descricao = descricao;
             PrecoMinimo = precoMinimo;
             PrecoMaximo = precoMaximo;
             RegraComissaoId = regraComissaoId;
+
+            return Result<bool>.Ok(true);
         }
 
-        private void Validar(string nome, string descricao, decimal precoMinimo, decimal precoMaximo, byte regraComissaoId)
+        private static Result<bool> Validar(string nome, string descricao, decimal precoMinimo, decimal precoMaximo, byte regraComissaoId)
         {
-            if (string.IsNullOrWhiteSpace(nome))
-                throw new ProdutoException("O nome do produto não pode ser vazio.");
+            if (string.IsNullOrWhiteSpace(nome)) return Result<bool>.Error("O nome do produto não pode ser vazio.");
+            if (string.IsNullOrWhiteSpace(descricao)) return Result<bool>.Error("A descrição do produto não pode ser vazia.");
+            if (precoMinimo < 0) return Result<bool>.Error("O preço mínimo do produto não pode ser negativo.");
+            if (precoMaximo < 0) return Result<bool>.Error("O preço máximo do produto não pode ser negativo.");
+            if (precoMinimo > precoMaximo) return Result<bool>.Error("O preço mínimo do produto não pode ser maior que o preço máximo.");
+            if (regraComissaoId <= 0) return Result<bool>.Error("A regra de comissão deve ser informada e maior que zero.");
 
-            if (string.IsNullOrWhiteSpace(descricao))
-                throw new ProdutoException("A descrição do produto não pode ser vazia.");
-
-            if (precoMinimo < 0)
-                throw new ProdutoException("O preço mínimo do produto não pode ser negativo.");
-
-            if (precoMaximo < 0)
-                throw new ProdutoException("O preço máximo do produto não pode ser negativo.");
-
-            if (precoMinimo > precoMaximo)
-                throw new ProdutoException("O preço mínimo do produto não pode ser maior que o preço máximo.");
-
-            if (regraComissaoId <= 0)
-                throw new ProdutoException("A regra de comissão deve ser informada e maior que zero.");
+            return Result<bool>.Ok(true);
         }
 
         public override string ToString()
@@ -78,4 +80,4 @@ namespace ScofieldCommerce.Domain.Entities
             return Id == 0 ? base.GetHashCode() : Id.GetHashCode();
         }   
     }
-}
+} 
