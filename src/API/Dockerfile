@@ -5,6 +5,9 @@ WORKDIR /src
 COPY ["ScofieldCommerce.sln", "./"]
 COPY ["ScofieldCommerce.API/ScofieldCommerce.API.csproj", "ScofieldCommerce.API/"]
 COPY ["ScofieldCommerce.Domain/ScofieldCommerce.Domain.csproj", "ScofieldCommerce.Domain/"]
+COPY ["ScofieldCommerce.Application/ScofieldCommerce.Application.csproj", "ScofieldCommerce.Application/"]
+COPY ["ScofieldCommerce.Infrastructure/ScofieldCommerce.Infrastructure.csproj", "ScofieldCommerce.Infrastructure/"]
+COPY ["ScofieldCommerce.Tests/ScofieldCommerce.Tests.csproj", "ScofieldCommerce.Tests/"]
 
 RUN dotnet restore "ScofieldCommerce.sln"
 
