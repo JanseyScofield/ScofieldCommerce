@@ -34,8 +34,6 @@ namespace ScofieldCommerce.Domain.Entities.Venda
 
         private void Validar(long vendaId, Produto produto, int quantidade, decimal valorUnitario)
         {
-            if (vendaId <= 0)
-                throw new VendaException("Venda Id deve ser maior que zero.");
 
             if (produto.Id <= 0)
                 throw new VendaException("Produto Id deve ser maior que zero.");

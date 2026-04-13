@@ -9,28 +9,31 @@ namespace ScofieldCommerce.Domain.Entities
        public string Descricao { get; private set; } = null!;
        public decimal PrecoMinimo { get; private set; }
        public decimal PrecoMaximo { get; private set; }
+       public byte RegraComissaoId { get; private set; }
 
         protected Produto() { }
 
-        public Produto(string nome, string descricao, decimal precoMinimo, decimal precoMaximo)
+        public Produto(string nome, string descricao, decimal precoMinimo, decimal precoMaximo, byte regraComissaoId)
         {
-            Validar(nome, descricao, precoMinimo, precoMaximo);
+            Validar(nome, descricao, precoMinimo, precoMaximo, regraComissaoId);
             Nome = nome;
             Descricao = descricao;
             PrecoMinimo = precoMinimo;
             PrecoMaximo = precoMaximo;
+            RegraComissaoId = regraComissaoId;
         }
 
-        public void Atualizar(string nome, string descricao, decimal precoMinimo, decimal precoMaximo)
+        public void Atualizar(string nome, string descricao, decimal precoMinimo, decimal precoMaximo, byte regraComissaoId)
         {
-            Validar(nome, descricao, precoMinimo, precoMaximo);
+            Validar(nome, descricao, precoMinimo, precoMaximo, regraComissaoId);
             Nome = nome;
             Descricao = descricao;
             PrecoMinimo = precoMinimo;
             PrecoMaximo = precoMaximo;
+            RegraComissaoId = regraComissaoId;
         }
 
-        private void Validar(string nome, string descricao, decimal precoMinimo, decimal precoMaximo)
+        private void Validar(string nome, string descricao, decimal precoMinimo, decimal precoMaximo, byte regraComissaoId)
         {
             if (string.IsNullOrWhiteSpace(nome))
                 throw new ProdutoException("O nome do produto não pode ser vazio.");
@@ -46,6 +49,9 @@ namespace ScofieldCommerce.Domain.Entities
 
             if (precoMinimo > precoMaximo)
                 throw new ProdutoException("O preço mínimo do produto não pode ser maior que o preço máximo.");
+
+            if (regraComissaoId <= 0)
+                throw new ProdutoException("A regra de comissão deve ser informada e maior que zero.");
         }
 
         public override string ToString()

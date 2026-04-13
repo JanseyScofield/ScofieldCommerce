@@ -1,11 +1,12 @@
 using ScofieldCommerce.Domain.Exceptions;
+using ScofieldCommerce.Domain.Strategies;
 
 namespace ScofieldCommerce.Domain.Entities.Venda
 {
     public class Venda
     {
         public long Id { get; private set; }
-        public int ClienteId { get; private set; }
+        public long ClienteId { get; private set; }
         public sbyte PrazoPagamentoDias { get; private set; }
         public bool PossuiNotaFiscal { get; private set; }
         public decimal ValorTotal { get; private set; }
@@ -13,43 +14,45 @@ namespace ScofieldCommerce.Domain.Entities.Venda
         public DateTime DataVenda { get; private set; }
 
         public Cliente Cliente { get; private set; } = null!;
-        public IEnumerable<ProdutoVendido> ProdutosVendidos { get; set; } = null!;
+        
+        private readonly List<ProdutoVendido> _produtosVendidos = new();
+        public IReadOnlyCollection<ProdutoVendido> ProdutosVendidos => _produtosVendidos.AsReadOnly();
         protected Venda() { }
 
-        public Venda(int clienteId, sbyte prazoPagamentoDias, bool possuiNotaFiscal, decimal valorTotal, decimal comissaoTotal, DateTime dataVenda)
+        public Venda(long clienteId, sbyte prazoPagamentoDias, bool possuiNotaFiscal, DateTime dataVenda)
         {
-            Validar(clienteId, prazoPagamentoDias, valorTotal, comissaoTotal, dataVenda);
+            Validar(clienteId, prazoPagamentoDias, dataVenda);
             ClienteId = clienteId;
-            ValorTotal = valorTotal;
-            ComissaoTotal = comissaoTotal;
             PrazoPagamentoDias = prazoPagamentoDias;
             PossuiNotaFiscal = possuiNotaFiscal;
             DataVenda = dataVenda;
         }
 
-        public void Atualizar(int clienteId, sbyte prazoPagamentoDias, bool possuiNotaFiscal, decimal valorTotal, decimal comissaoTotal, DateTime dataVenda)
+        public void Atualizar(long clienteId, sbyte prazoPagamentoDias, bool possuiNotaFiscal, DateTime dataVenda)
         {
-            Validar(clienteId, prazoPagamentoDias, valorTotal, comissaoTotal, dataVenda);
+            Validar(clienteId, prazoPagamentoDias, dataVenda);
             ClienteId = clienteId;
-            ValorTotal = valorTotal;
             PrazoPagamentoDias = prazoPagamentoDias;
             PossuiNotaFiscal = possuiNotaFiscal;
             DataVenda = dataVenda;
         }
 
-        private void Validar(int clienteId, sbyte prazoPagamentoDias, decimal valorTotal, decimal comissaoTotal, DateTime dataVenda)
+        public void AdicionarProduto(Produto produto, int quantidade, decimal valorUnitario, ICommissionStrategy strategy)
+        {
+            var produtoVendido = new ProdutoVendido(Id, produto, quantidade, valorUnitario);
+            _produtosVendidos.Add(produtoVendido);
+            
+            ValorTotal += valorUnitario * quantidade;
+            ComissaoTotal += strategy.CalcularComissao(valorUnitario, quantidade);
+        }
+
+        private void Validar(long clienteId, sbyte prazoPagamentoDias, DateTime dataVenda)
         {
             if (clienteId <= 0)
                 throw new VendaException("Cliente Id deve ser maior que zero.");
 
             if (prazoPagamentoDias < 0)
                 throw new VendaException("Prazo de pagamento em dias não pode ser negativo.");
-
-            if (valorTotal <= 0)
-                throw new VendaException("Valor total deve ser maior que zero.");
-
-            if (comissaoTotal < 0)
-                throw new VendaException("Comissão total não pode ser negativa.");
 
             if (dataVenda > DateTime.Now)
                 throw new VendaException("Data da venda não pode ser no futuro.");
