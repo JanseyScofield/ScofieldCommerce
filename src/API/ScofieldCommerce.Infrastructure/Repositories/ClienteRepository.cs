@@ -17,6 +17,11 @@ namespace ScofieldCommerce.Infrastructure.Repositories
             _context = context;
         }
 
+        public async Task<IEnumerable<Cliente>> ObterTodosAsync()
+        {
+            return await _context.Clientes.AsNoTracking().ToListAsync();
+        }
+
         public async Task AdicionarAsync(Cliente cliente)
         {
             await _context.Clientes.AddAsync(cliente);

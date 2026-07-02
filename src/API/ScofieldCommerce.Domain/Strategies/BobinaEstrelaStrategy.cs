@@ -1,11 +1,11 @@
 namespace ScofieldCommerce.Domain.Strategies
 {
-    public class FilmePvcStrategy : ICommissionStrategy
+    public class BobinaEstrelaStrategy : ICommissionStrategy
     {
         public decimal CalcularComissao(decimal valorUnitario, int quantidade)
         {
             var valorTotalItem = valorUnitario * quantidade;
-            return valorTotalItem * 0.05m;
+            return valorTotalItem * 0.10m;
         }
     }
 }

@@ -13,7 +13,13 @@ namespace ScofieldCommerce.API.Endpoints
         public static void MapClientesEndpoints(this IEndpointRouteBuilder app)
         {
             var group = app.MapGroup("/clientes").WithTags("Clientes");
-            
+
+            group.MapGet("/", async (IClienteRepository repo) =>
+            {
+                var clientes = await repo.ObterTodosAsync();
+                return Results.Ok(clientes);
+            });
+
             group.MapPost("/", async ([FromBody] CriarClienteDto dto, IClienteService service) =>
             {
                 var result = await service.CadastrarAsync(dto);

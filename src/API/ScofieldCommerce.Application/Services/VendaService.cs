@@ -56,7 +56,7 @@ namespace ScofieldCommerce.Application.Services
                     var produto = await _produtoRepository.ObterPorIdAsync(item.ProdutoId);
                     if (produto == null) return Result<Venda>.Error($"Produto {item.ProdutoId} não encontrado.");
 
-                    var strategy = _commissionFactory.GetStrategy(produto.RegraComissaoId);
+                    var strategy = _commissionFactory.GetStrategy(produto.Nome);
                     
                     var adicionarResult = venda.AdicionarProduto(produto, item.Quantidade, item.ValorUnitario, strategy);
                     if (!adicionarResult.IsSuccess) return Result<Venda>.Error(adicionarResult.ErrorMessage!);
@@ -80,8 +80,9 @@ namespace ScofieldCommerce.Application.Services
             try
             {
                 var totalVendido = await _vendaRepository.ObterTotalVendasGlobalAsync();
-                var ajudaCusto = Math.Floor(totalVendido / 10000m) * 100m;
-                return Result<decimal>.Ok(ajudaCusto);
+                var premiacao = Math.Floor(totalVendido / 10000m) * 100m;
+                var ajudaCustoFixa = 500m;
+                return Result<decimal>.Ok(premiacao + ajudaCustoFixa);
             }
             catch(Exception ex)
             {

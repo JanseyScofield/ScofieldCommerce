@@ -12,7 +12,6 @@ export const Cadastros = () => {
   const [descricaoProduto, setDescricaoProduto] = useState('');
   const [precoMinimo, setPrecoMinimo] = useState('');
   const [precoMaximo, setPrecoMaximo] = useState('');
-  const [regraComissaoId, setRegraComissaoId] = useState('1'); // Regra padrão 1
 
   // Estados Form Cliente
   const [razaoSocial, setRazaoSocial] = useState('');
@@ -42,8 +41,7 @@ export const Cadastros = () => {
         nome: nomeProduto,
         descricao: descricaoProduto,
         precoMinimo: Number(precoMinimo),
-        precoMaximo: Number(precoMaximo),
-        regraComissaoId: Number(regraComissaoId)
+        precoMaximo: Number(precoMaximo)
       });
       alert('Produto cadastrado com sucesso!');
       // Limpa formulário
@@ -51,7 +49,6 @@ export const Cadastros = () => {
       setDescricaoProduto('');
       setPrecoMinimo('');
       setPrecoMaximo('');
-      setRegraComissaoId('1');
     } catch (error: any) {
       console.error('Erro ao cadastrar produto:', error);
       alert(`Erro ao cadastrar produto: ${error.response?.data?.Erro || error.message}`);
@@ -112,17 +109,15 @@ export const Cadastros = () => {
       <div className="flex space-x-1 bg-slate-100 p-1 rounded-xl shadow-sm border border-slate-200/50">
         <button
           onClick={() => setAbaAtiva('produto')}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-colors ${
-            abaAtiva === 'produto' ? 'bg-white text-yellow-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-          }`}
+          className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-colors ${abaAtiva === 'produto' ? 'bg-white text-yellow-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+            }`}
         >
           Cadastro de Produto
         </button>
         <button
           onClick={() => setAbaAtiva('cliente')}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-colors ${
-            abaAtiva === 'cliente' ? 'bg-white text-yellow-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-          }`}
+          className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-colors ${abaAtiva === 'cliente' ? 'bg-white text-yellow-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+            }`}
         >
           Cadastro de Cliente
         </button>
@@ -135,18 +130,18 @@ export const Cadastros = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-slate-600 mb-1">Nome do Produto *</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="Ex: Geladeira Frost Free" 
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Ex: Geladeira Frost Free"
                   value={nomeProduto}
                   onChange={(e) => setNomeProduto(e.target.value)}
                 />
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-slate-600 mb-1">Descrição</label>
-                <textarea 
-                  className="input-field h-24" 
+                <textarea
+                  className="input-field h-24"
                   placeholder="Descrição detalhada..."
                   value={descricaoProduto}
                   onChange={(e) => setDescricaoProduto(e.target.value)}
@@ -154,37 +149,25 @@ export const Cadastros = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Preço Mínimo (R$) *</label>
-                <input 
-                  type="number" 
-                  step="0.01" 
-                  className="input-field" 
-                  placeholder="0.00" 
+                <input
+                  type="number"
+                  step="0.01"
+                  className="input-field"
+                  placeholder="0.00"
                   value={precoMinimo}
                   onChange={(e) => setPrecoMinimo(e.target.value)}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Preço Máximo (R$) *</label>
-                <input 
-                  type="number" 
-                  step="0.01" 
-                  className="input-field" 
-                  placeholder="0.00" 
+                <input
+                  type="number"
+                  step="0.01"
+                  className="input-field"
+                  placeholder="0.00"
                   value={precoMaximo}
                   onChange={(e) => setPrecoMaximo(e.target.value)}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Regra de Comissão (ID) *</label>
-                <select 
-                  className="input-field"
-                  value={regraComissaoId}
-                  onChange={(e) => setRegraComissaoId(e.target.value)}
-                >
-                  <option value="1">Regra 1 (Padrão/Geral)</option>
-                  <option value="2">Regra 2 (Especial)</option>
-                  <option value="3">Regra 3 (Promocional)</option>
-                </select>
               </div>
             </div>
             <div className="flex justify-end pt-6 border-t border-slate-100">
@@ -200,40 +183,40 @@ export const Cadastros = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Razão Social *</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="Razão Social" 
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Razão Social"
                   value={razaoSocial}
                   onChange={(e) => setRazaoSocial(e.target.value)}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Nome Fantasia *</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="Nome Fantasia" 
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Nome Fantasia"
                   value={nomeFantasia}
                   onChange={(e) => setNomeFantasia(e.target.value)}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">CNPJ *</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="Somente números (ex: 12345678000199)" 
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Somente números (ex: 12345678000199)"
                   value={cnpj}
                   onChange={(e) => setCnpj(e.target.value)}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Inscrição Estadual *</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="Inscrição Estadual" 
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Inscrição Estadual"
                   value={inscricaoEstadual}
                   onChange={(e) => setInscricaoEstadual(e.target.value)}
                 />
@@ -245,70 +228,70 @@ export const Cadastros = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">CEP *</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="Ex: 89000000" 
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Ex: 89000000"
                   value={cep}
                   onChange={(e) => setCep(e.target.value)}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Logradouro *</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="Rua / Avenida" 
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Rua / Avenida"
                   value={logradouro}
                   onChange={(e) => setLogradouro(e.target.value)}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Número *</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="Nº" 
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Nº"
                   value={numero}
                   onChange={(e) => setNumero(e.target.value)}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Complemento</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="Apto, Sala, Bloco" 
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Apto, Sala, Bloco"
                   value={complemento}
                   onChange={(e) => setComplemento(e.target.value)}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Bairro *</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="Bairro" 
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Bairro"
                   value={bairro}
                   onChange={(e) => setBairro(e.target.value)}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Cidade *</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="Cidade" 
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Cidade"
                   value={cidade}
                   onChange={(e) => setCidade(e.target.value)}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Estado *</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="UF (ex: SP)" 
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="UF (ex: SP)"
                   value={estado}
                   onChange={(e) => setEstado(e.target.value)}
                 />
@@ -320,26 +303,26 @@ export const Cadastros = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Nome do Comprador *</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="Nome do responsável pelas compras" 
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Nome do responsável pelas compras"
                   value={nomeComprador}
                   onChange={(e) => setNomeComprador(e.target.value)}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Telefone do Comprador *</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="Telefone ou celular" 
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Telefone ou celular"
                   value={telefoneComprador}
                   onChange={(e) => setTelefoneComprador(e.target.value)}
                 />
               </div>
             </div>
-            
+
             <div className="flex justify-end pt-6 border-t border-slate-100">
               <button type="submit" disabled={salvando} className="btn-primary flex items-center gap-2">
                 {salvando ? <Loader className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}

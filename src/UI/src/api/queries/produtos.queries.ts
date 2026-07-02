@@ -6,7 +6,6 @@ export interface ProdutoDto {
   descricao: string;
   precoMinimo: number;
   precoMaximo: number;
-  regraComissaoId: number;
 }
 
 export const produtosQueries = {
@@ -18,8 +17,7 @@ export const produtosQueries = {
         nome: p.nome || p.Nome,
         descricao: p.descricao || p.Descricao,
         precoMinimo: Number(p.precoMinimo || p.PrecoMinimo || 0),
-        precoMaximo: Number(p.precoMaximo || p.PrecoMaximo || 0),
-        regraComissaoId: Number(p.regraComissaoId || p.RegraComissaoId || 1)
+        precoMaximo: Number(p.precoMaximo || p.PrecoMaximo || 0)
       }));
     } catch (error) {
       console.error('Erro ao obter produtos:', error);

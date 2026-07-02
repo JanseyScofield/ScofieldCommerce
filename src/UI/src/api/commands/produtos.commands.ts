@@ -5,7 +5,6 @@ export interface ComandoCriarProduto {
   descricao: string;
   precoMinimo: number;
   precoMaximo: number;
-  regraComissaoId: number;
 }
 
 export const produtosCommands = {
@@ -14,8 +13,7 @@ export const produtosCommands = {
       nome: comando.nome,
       descricao: comando.descricao,
       precoMinimo: comando.precoMinimo,
-      precoMaximo: comando.precoMaximo,
-      regraComissaoId: comando.regraComissaoId
+      precoMaximo: comando.precoMaximo
     };
     const { data } = await apiClient.post('/produtos', payload);
     return data;

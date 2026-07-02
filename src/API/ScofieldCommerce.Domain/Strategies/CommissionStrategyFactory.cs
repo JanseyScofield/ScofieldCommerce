@@ -1,34 +1,36 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ScofieldCommerce.Domain.Strategies
 {
     public interface ICommissionStrategyFactory
     {
-        ICommissionStrategy GetStrategy(byte regraComissaoId);
+        ICommissionStrategy GetStrategy(string productName);
     }
 
     public class CommissionStrategyFactory : ICommissionStrategyFactory
     {
-        private readonly Dictionary<byte, ICommissionStrategy> _strategies;
-
-        public CommissionStrategyFactory()
+        public ICommissionStrategy GetStrategy(string productName)
         {
-            _strategies = new Dictionary<byte, ICommissionStrategy>
-            {
-                { 1, new BobinaStrategy() },
-                { 2, new FilmePvcStrategy() },
-                { 3, new FixoStrategy() } // Sacola e Saco de lixo
-            };
-        }
+            if (string.IsNullOrWhiteSpace(productName))
+                return new BobinaPicotadaStrategy(); // Default fallback
 
-        public ICommissionStrategy GetStrategy(byte regraComissaoId)
-        {
-            if (_strategies.TryGetValue(regraComissaoId, out var strategy))
-            {
-                return strategy;
-            }
+            var name = productName.ToLowerInvariant().Replace(" ", "");
+
+            if (name.Contains("bobinaestrela"))
+                return new BobinaEstrelaStrategy();
             
-            throw new System.Exception($"Regra de comissão {regraComissaoId} não mapeada ou inexistente.");
+            if (name.Contains("bobinapicotada"))
+                return new BobinaPicotadaStrategy();
+
+            if (name.Contains("sacolixo") || name.Contains("sacodelixo"))
+                return new SacoLixoStrategy();
+
+            if (name.Contains("filmepvc"))
+                return new FilmePvcStrategy();
+
+            // Default fallback
+            return new BobinaPicotadaStrategy();
         }
     }
 }
