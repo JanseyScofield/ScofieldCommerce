@@ -19,6 +19,8 @@ export const NovaVenda = () => {
   const [clientes, setClientes] = useState<ClienteDto[]>([]);
   const [produtos, setProdutos] = useState<ProdutoDto[]>([]);
   const [itens, setItens] = useState<ItemVenda[]>([]);
+  const [subtotalGeral, setSubtotalGeral] = useState<number>(0);
+  const [valorComissaoEstimada, setValorComissaoEstimada] = useState<number>(0);
   
   // Estados de formulário
   const [clienteSelecionado, setClienteSelecionado] = useState<number | ''>('');
@@ -138,8 +140,38 @@ export const NovaVenda = () => {
     }
   };
 
-  const subtotalGeral = itens.reduce((acc, item) => acc + (item.quantidade * item.precoUnitario), 0);
-  const valorComissaoEstimada = subtotalGeral * 0.05;
+  useEffect(() => {
+    const calcularTotais = async () => {
+      if (itens.length === 0) {
+        setSubtotalGeral(0);
+        setValorComissaoEstimada(0);
+        return;
+      }
+      try {
+        const resultado = await vendasCommands.calcularVenda({
+          produtos: itens.map(i => ({
+            produtoId: i.produtoId,
+            quantidade: i.quantidade,
+            valorUnitario: i.precoUnitario
+          }))
+        });
+        setSubtotalGeral(resultado.valorTotal);
+        setValorComissaoEstimada(resultado.comissaoTotal);
+      } catch (error) {
+        console.error('Erro ao calcular totais da venda no backend:', error);
+        // Fallback local em caso de falha do backend
+        const subtotal = itens.reduce((acc, item) => acc + (item.quantidade * item.precoUnitario), 0);
+        setSubtotalGeral(subtotal);
+        const nameEstrela = (nome: string) => nome.toLowerCase().replace(/\s+/g, '').includes('bobinaestrela');
+        const comissao = itens.reduce((acc, item) => {
+          const percentual = nameEstrela(item.nomeProduto) ? 0.10 : 0.05;
+          return acc + (item.quantidade * item.precoUnitario * percentual);
+        }, 0);
+        setValorComissaoEstimada(comissao);
+      }
+    };
+    calcularTotais();
+  }, [itens]);
 
   if (carregando) return <div className="p-8 text-slate-500 text-center animate-pulse">Carregando dados da venda...</div>;
 
@@ -306,7 +338,7 @@ export const NovaVenda = () => {
                 </span>
               </div>
               <div className="flex justify-between items-center pt-4 border-t border-slate-100">
-                <span className="font-medium text-yellow-600">Comissão (Est. 5%)</span>
+                <span className="font-medium text-yellow-600">Comissão Estimada</span>
                 <span className="text-xl font-bold text-yellow-600">
                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorComissaoEstimada)}
                 </span>

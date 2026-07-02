@@ -75,5 +75,40 @@ namespace ScofieldCommerce.Tests.Application.Services
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().Be(700.0m);
         }
+
+        [Fact]
+        public async Task CalcularVendaAsync_Deve_RetornarCalculoCorreto()
+        {
+            // Arrange
+            var mockVendaRepo = new Mock<IVendaRepository>();
+            var mockProdutoRepo = new Mock<IProdutoRepository>();
+            var mockFactory = new Mock<ICommissionStrategyFactory>();
+
+            var strategyBobina = new Mock<ICommissionStrategy>();
+            strategyBobina.Setup(x => x.CalcularComissao(150.0m, 2)).Returns(15.0m);
+
+            mockFactory.Setup(f => f.GetStrategy("Bobina Estrela")).Returns(strategyBobina.Object);
+
+            var produto = Produto.Criar("Bobina Estrela", 100.0m, 200.0m).Data!;
+            mockProdutoRepo.Setup(p => p.ObterPorIdAsync(1)).ReturnsAsync(produto);
+
+            var dto = new CalcularVendaDto
+            {
+                Produtos = new List<ProdutoVendidoDto>
+                {
+                    new ProdutoVendidoDto { ProdutoId = 1, Quantidade = 2, ValorUnitario = 150.0m }
+                }
+            };
+
+            var service = new VendaService(mockVendaRepo.Object, mockProdutoRepo.Object, null!, null!, mockFactory.Object);
+
+            // Act
+            var result = await service.CalcularVendaAsync(dto);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Data!.ValorTotal.Should().Be(300.0m);
+            result.Data!.ComissaoTotal.Should().Be(15.0m);
+        }
     }
 }

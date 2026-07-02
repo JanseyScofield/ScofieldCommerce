@@ -9,5 +9,6 @@ namespace ScofieldCommerce.Application.Interfaces.Services
     {
         Task<Result<Venda>> RegistrarVendaAsync(RegistrarVendaDto dto);
         Task<Result<decimal>> ObterAjudaDeCustoGlobalAsync();
+        Task<Result<CalculoVendaResultadoDto>> CalcularVendaAsync(CalcularVendaDto dto);
     }
 }

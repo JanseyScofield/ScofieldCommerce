@@ -146,7 +146,7 @@ export const Cadastros = () => {
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="Ex: Geladeira Frost Free"
+                  placeholder="Ex: Bobina Picotada  25 x 35"
                   value={nomeProduto}
                   onChange={(e) => setNomeProduto(e.target.value)}
                 />

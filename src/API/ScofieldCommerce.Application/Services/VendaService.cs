@@ -89,5 +89,39 @@ namespace ScofieldCommerce.Application.Services
                 return Result<decimal>.Error($"Erro interno ao obter ajuda de custo: {ex.Message}");
             }
         }
+
+        public async Task<Result<CalculoVendaResultadoDto>> CalcularVendaAsync(CalcularVendaDto dto)
+        {
+            try
+            {
+                decimal valorTotal = 0;
+                decimal comissaoTotal = 0;
+
+                if (dto.Produtos != null)
+                {
+                    foreach (var item in dto.Produtos)
+                    {
+                        var produto = await _produtoRepository.ObterPorIdAsync(item.ProdutoId);
+                        if (produto == null) 
+                            return Result<CalculoVendaResultadoDto>.Error($"Produto {item.ProdutoId} não encontrado.");
+
+                        var strategy = _commissionFactory.GetStrategy(produto.Nome);
+                        
+                        valorTotal += item.ValorUnitario * item.Quantidade;
+                        comissaoTotal += strategy.CalcularComissao(item.ValorUnitario, item.Quantidade);
+                    }
+                }
+
+                return Result<CalculoVendaResultadoDto>.Ok(new CalculoVendaResultadoDto
+                {
+                    ValorTotal = valorTotal,
+                    ComissaoTotal = comissaoTotal
+                });
+            }
+            catch(Exception ex)
+            {
+                return Result<CalculoVendaResultadoDto>.Error($"Erro interno ao calcular venda: {ex.Message}");
+            }
+        }
     }
 }

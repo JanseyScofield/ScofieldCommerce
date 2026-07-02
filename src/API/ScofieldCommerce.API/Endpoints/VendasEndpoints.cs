@@ -36,6 +36,15 @@ namespace ScofieldCommerce.API.Endpoints
 
                 return Results.Ok(new { AjudaDeCustoAcumulada = result.Data });
             });
+
+            group.MapPost("/calcular", async ([FromBody] CalcularVendaDto dto, IVendaService service) =>
+            {
+                var result = await service.CalcularVendaAsync(dto);
+                if (!result.IsSuccess)
+                    return Results.BadRequest(new { Erro = result.ErrorMessage });
+
+                return Results.Ok(result.Data);
+            });
         }
     }
 }
