@@ -2,10 +2,16 @@ import { useState } from 'react';
 import { Save, Loader } from 'lucide-react';
 import { produtosCommands } from '../api/commands/produtos.commands';
 import { clientesCommands } from '../api/commands/clientes.commands';
+import { Popup } from '../components/Popup';
 
 export const Cadastros = () => {
   const [abaAtiva, setAbaAtiva] = useState<'produto' | 'cliente'>('produto');
   const [salvando, setSalvando] = useState(false);
+  const [popup, setPopup] = useState<{show: boolean, type: 'success' | 'error', message: string} | null>(null);
+
+  const showPopup = (type: 'success' | 'error', message: string) => {
+    setPopup({ show: true, type, message });
+  };
 
   // Estados Form Produto
   const [nomeProduto, setNomeProduto] = useState('');
@@ -31,7 +37,7 @@ export const Cadastros = () => {
   const salvarProduto = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nomeProduto || !precoMinimo || !precoMaximo) {
-      alert('Preencha os campos obrigatórios.');
+      showPopup('error', 'Preencha os campos obrigatórios.');
       return;
     }
 
@@ -43,7 +49,7 @@ export const Cadastros = () => {
         precoMinimo: Number(precoMinimo),
         precoMaximo: Number(precoMaximo)
       });
-      alert('Produto cadastrado com sucesso!');
+      showPopup('success', 'Produto cadastrado com sucesso!');
       // Limpa formulário
       setNomeProduto('');
       setDescricaoProduto('');
@@ -51,7 +57,7 @@ export const Cadastros = () => {
       setPrecoMaximo('');
     } catch (error: any) {
       console.error('Erro ao cadastrar produto:', error);
-      alert(`Erro ao cadastrar produto: ${error.response?.data?.Erro || error.message}`);
+      showPopup('error', `Erro ao cadastrar produto: ${error.response?.data?.Erro || error.message}`);
     } finally {
       setSalvando(false);
     }
@@ -60,7 +66,7 @@ export const Cadastros = () => {
   const salvarCliente = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!razaoSocial || !nomeFantasia || !cnpj || !inscricaoEstadual || !cep || !logradouro || !numero || !bairro || !cidade || !estado || !nomeComprador || !telefoneComprador) {
-      alert('Todos os campos (exceto complemento) são obrigatórios para validação da entidade Cliente.');
+      showPopup('error', 'Todos os campos (exceto complemento) são obrigatórios para validação da entidade Cliente.');
       return;
     }
 
@@ -81,7 +87,7 @@ export const Cadastros = () => {
         nomeComprador,
         telefoneComprador
       });
-      alert('Cliente cadastrado com sucesso!');
+      showPopup('success', 'Cliente cadastrado com sucesso!');
       // Limpa formulário
       setRazaoSocial('');
       setNomeFantasia('');
@@ -98,14 +104,22 @@ export const Cadastros = () => {
       setTelefoneComprador('');
     } catch (error: any) {
       console.error('Erro ao cadastrar cliente:', error);
-      alert(`Erro ao cadastrar cliente: ${error.response?.data?.Erro || error.message}`);
+      showPopup('error', `Erro ao cadastrar cliente: ${error.response?.data?.Erro || error.message}`);
     } finally {
       setSalvando(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <>
+      <Popup 
+        show={popup?.show ?? false}
+        type={popup?.type ?? 'error'}
+        message={popup?.message ?? ''}
+        onClose={() => setPopup(null)}
+      />
+
+      <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex space-x-1 bg-slate-100 p-1 rounded-xl shadow-sm border border-slate-200/50">
         <button
           onClick={() => setAbaAtiva('produto')}
@@ -333,5 +347,6 @@ export const Cadastros = () => {
         )}
       </div>
     </div>
+    </>
   );
 };

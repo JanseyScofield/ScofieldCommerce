@@ -5,6 +5,7 @@ import { clientesQueries } from '../api/queries/clientes.queries';
 import type { ClienteDto } from '../api/queries/clientes.queries';
 import { produtosQueries } from '../api/queries/produtos.queries';
 import type { ProdutoDto } from '../api/queries/produtos.queries';
+import { Popup } from '../components/Popup';
 
 interface ItemVenda {
   id: string;
@@ -31,6 +32,11 @@ export const NovaVenda = () => {
 
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const [popup, setPopup] = useState<{show: boolean, type: 'success' | 'error', message: string} | null>(null);
+
+  const showPopup = (type: 'success' | 'error', message: string) => {
+    setPopup({ show: true, type, message });
+  };
 
   useEffect(() => {
     const carregarDados = async () => {
@@ -74,7 +80,7 @@ export const NovaVenda = () => {
     // Evita duplicidade agrupando ou alertando
     const itemExistente = itens.find(i => i.produtoId === prod.id);
     if (itemExistente) {
-      alert('Este produto já foi adicionado. Remova-o ou edite para alterar a quantidade.');
+      showPopup('error', 'Este produto já foi adicionado. Remova-o ou edite para alterar a quantidade.');
       return;
     }
     
@@ -98,11 +104,11 @@ export const NovaVenda = () => {
 
   const finalizarVenda = async () => {
     if (!clienteSelecionado) {
-      alert('Selecione um cliente.');
+      showPopup('error', 'Selecione um cliente.');
       return;
     }
     if (itens.length === 0) {
-      alert('Adicione pelo menos um item à venda.');
+      showPopup('error', 'Adicione pelo menos um item à venda.');
       return;
     }
 
@@ -119,13 +125,13 @@ export const NovaVenda = () => {
         }))
       });
       
-      alert('Venda finalizada com sucesso!');
+      showPopup('success', 'Venda finalizada com sucesso!');
       setItens([]);
       setClienteSelecionado('');
       setPrazoPagamento(0);
     } catch (error: any) {
       console.error('Erro ao finalizar venda:', error);
-      alert(`Falha ao registrar venda: ${error.response?.data?.Erro || error.message}`);
+      showPopup('error', `Falha ao registrar venda: ${error.response?.data?.Erro || error.message}`);
     } finally {
       setSalvando(false);
     }
@@ -137,6 +143,14 @@ export const NovaVenda = () => {
   if (carregando) return <div className="p-8 text-slate-500 text-center animate-pulse">Carregando dados da venda...</div>;
 
   return (
+    <>
+      <Popup 
+        show={popup?.show ?? false}
+        type={popup?.type ?? 'error'}
+        message={popup?.message ?? ''}
+        onClose={() => setPopup(null)}
+      />
+
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Área 1 - Cabeçalho */}
       <div className="card p-6">
@@ -314,5 +328,6 @@ export const NovaVenda = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };

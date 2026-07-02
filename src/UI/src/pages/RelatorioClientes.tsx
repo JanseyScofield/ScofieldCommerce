@@ -3,6 +3,7 @@ import { Trophy, PieChart as PieChartIcon, AlertTriangle, Loader } from 'lucide-
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import { clientesQueries } from '../api/queries/clientes.queries';
 import type { RankingClienteDto, ClienteInativoDto } from '../api/queries/clientes.queries';
+import { Popup } from '../components/Popup';
 
 export const RelatorioClientes = () => {
   const [diasInativos, setDiasInativos] = useState(30);
@@ -13,6 +14,11 @@ export const RelatorioClientes = () => {
 
   const [carregandoListas, setCarregandoListas] = useState(true);
   const [carregandoInativos, setCarregandoInativos] = useState(false);
+  const [popup, setPopup] = useState<{show: boolean, type: 'success' | 'error', message: string} | null>(null);
+
+  const showPopup = (type: 'success' | 'error', message: string) => {
+    setPopup({ show: true, type, message });
+  };
 
   // Carrega Dados Iniciais (Ranking e Preferência)
   useEffect(() => {
@@ -54,6 +60,14 @@ export const RelatorioClientes = () => {
   if (carregandoListas) return <div className="p-8 text-slate-500 text-center animate-pulse">Carregando inteligência de clientes...</div>;
 
   return (
+    <>
+      <Popup 
+        show={popup?.show ?? false}
+        type={popup?.type ?? 'error'}
+        message={popup?.message ?? ''}
+        onClose={() => setPopup(null)}
+      />
+
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
       {/* Painel 1 - Top Clientes */}
       <div className="card p-6 lg:col-span-1">
@@ -198,7 +212,7 @@ export const RelatorioClientes = () => {
                       <td>
                         <a 
                           href={`tel:${cliente.razaoSocial}`} 
-                          onClick={(e) => { e.preventDefault(); alert(`Entrando em contato com ${cliente.razaoSocial}...`); }}
+                          onClick={(e) => { e.preventDefault(); showPopup('success', `Entrando em contato com ${cliente.razaoSocial}...`); }}
                           className="btn-secondary py-1.5 px-4 text-xs font-bold hover:text-yellow-600 transition-colors inline-block"
                         >
                           Entrar em Contato
@@ -213,5 +227,6 @@ export const RelatorioClientes = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
