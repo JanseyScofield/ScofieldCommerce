@@ -13,6 +13,9 @@ RUN dotnet restore "ScofieldCommerce.sln"
 
 COPY . .
 
+# Automating Tests on Container Build
+RUN dotnet test "ScofieldCommerce.sln" --no-restore --logger "console;verbosity=normal" -c Release
+
 WORKDIR "/src/ScofieldCommerce.API"
 RUN dotnet publish "ScofieldCommerce.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 

@@ -29,7 +29,7 @@ namespace ScofieldCommerce.Tests.Application.Services
             var strategyBobina = new Mock<ICommissionStrategy>();
             strategyBobina.Setup(x => x.CalcularComissao(150.0m, 2)).Returns(15.0m); // mockando 10%
 
-            mockFactory.Setup(f => f.GetStrategy(1)).Returns(strategyBobina.Object);
+            mockFactory.Setup(f => f.GetStrategy("Bobina 2kg")).Returns(strategyBobina.Object);
 
             var clienteResult = Cliente.Criar("Razao", "Fantasia", Endereco.Criar("Rua", "1", "", "B", "C", "ES", Cep.Criar("12345678").Data!).Data!, Cnpj.Criar("60409075000152").Data!, "1", "N", "11999999999");
             mockClienteRepo.Setup(c => c.ObterPorIdAsync(1)).ReturnsAsync(clienteResult.Data!);
@@ -71,9 +71,9 @@ namespace ScofieldCommerce.Tests.Application.Services
             var result = await service.ObterAjudaDeCustoGlobalAsync();
 
             // Assert
-            // 25.000 -> 2 x 10.000 = 200 reais
+            // 25.000 -> 2 x 10.000 = 200 reais + 500 reais fixos = 700 reais
             result.IsSuccess.Should().BeTrue();
-            result.Data.Should().Be(200.0m);
+            result.Data.Should().Be(700.0m);
         }
     }
 }
