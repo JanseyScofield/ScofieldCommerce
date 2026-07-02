@@ -6,59 +6,51 @@ namespace ScofieldCommerce.Domain.Entities
     {
        public long Id { get; private set; }
        public string Nome { get; private set; } = null!;
-       public string Descricao { get; private set; } = null!;
        public decimal PrecoMinimo { get; private set; }
        public decimal PrecoMaximo { get; private set; }
-       public byte RegraComissaoId { get; private set; }
 
         protected Produto() { }
 
-        private Produto(string nome, string descricao, decimal precoMinimo, decimal precoMaximo, byte regraComissaoId)
+        private Produto(string nome, decimal precoMinimo, decimal precoMaximo)
         {
             Nome = nome;
-            Descricao = descricao;
             PrecoMinimo = precoMinimo;
             PrecoMaximo = precoMaximo;
-            RegraComissaoId = regraComissaoId;
         }
 
-        public static Result<Produto> Criar(string nome, string descricao, decimal precoMinimo, decimal precoMaximo, byte regraComissaoId)
+        public static Result<Produto> Criar(string nome, decimal precoMinimo, decimal precoMaximo)
         {
-            var validacao = Validar(nome, descricao, precoMinimo, precoMaximo, regraComissaoId);
+            var validacao = Validar(nome, precoMinimo, precoMaximo);
             if (!validacao.IsSuccess) return Result<Produto>.Error(validacao.ErrorMessage!);
 
-            return Result<Produto>.Ok(new Produto(nome, descricao, precoMinimo, precoMaximo, regraComissaoId));
+            return Result<Produto>.Ok(new Produto(nome, precoMinimo, precoMaximo));
         }
 
-        public Result<bool> Atualizar(string nome, string descricao, decimal precoMinimo, decimal precoMaximo, byte regraComissaoId)
+        public Result<bool> Atualizar(string nome, decimal precoMinimo, decimal precoMaximo)
         {
-            var validacao = Validar(nome, descricao, precoMinimo, precoMaximo, regraComissaoId);
+            var validacao = Validar(nome, precoMinimo, precoMaximo);
             if (!validacao.IsSuccess) return Result<bool>.Error(validacao.ErrorMessage!);
 
             Nome = nome;
-            Descricao = descricao;
             PrecoMinimo = precoMinimo;
             PrecoMaximo = precoMaximo;
-            RegraComissaoId = regraComissaoId;
 
             return Result<bool>.Ok(true);
         }
 
-        private static Result<bool> Validar(string nome, string descricao, decimal precoMinimo, decimal precoMaximo, byte regraComissaoId)
+        private static Result<bool> Validar(string nome, decimal precoMinimo, decimal precoMaximo)
         {
             if (string.IsNullOrWhiteSpace(nome)) return Result<bool>.Error("O nome do produto não pode ser vazio.");
-            if (string.IsNullOrWhiteSpace(descricao)) return Result<bool>.Error("A descrição do produto não pode ser vazia.");
             if (precoMinimo < 0) return Result<bool>.Error("O preço mínimo do produto não pode ser negativo.");
             if (precoMaximo < 0) return Result<bool>.Error("O preço máximo do produto não pode ser negativo.");
             if (precoMinimo > precoMaximo) return Result<bool>.Error("O preço mínimo do produto não pode ser maior que o preço máximo.");
-            if (regraComissaoId <= 0) return Result<bool>.Error("A regra de comissão deve ser informada e maior que zero.");
 
             return Result<bool>.Ok(true);
         }
 
         public override string ToString()
         {
-            return $"{Nome} - {Descricao} (Preço mínimo: {PrecoMinimo}, Preço máximo: {PrecoMaximo})";
+            return $"{Nome} (Preço mínimo: {PrecoMinimo}, Preço máximo: {PrecoMaximo})";
         }
 
         public override bool Equals(object? obj)

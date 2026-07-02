@@ -23,7 +23,7 @@ namespace ScofieldCommerce.Application.Services
         {
             try
             {
-                var produtoResult = Produto.Criar(dto.Nome, dto.Descricao, dto.PrecoMinimo, dto.PrecoMaximo, dto.RegraComissaoId);
+                var produtoResult = Produto.Criar(dto.Nome, dto.PrecoMinimo, dto.PrecoMaximo);
                 
                 if (!produtoResult.IsSuccess) 
                     return Result<Produto>.Error(produtoResult.ErrorMessage!);

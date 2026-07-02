@@ -23,10 +23,8 @@ namespace ScofieldCommerce.Tests.Application.Services
             var dto = new CriarProdutoDto
             {
                 Nome = "Bobina Plástica",
-                Descricao = "Bobina de Alta Densidade",
                 PrecoMinimo = 5.0m,
-                PrecoMaximo = 15.0m,
-                RegraComissaoId = 1
+                PrecoMaximo = 15.0m
             };
 
             // Act

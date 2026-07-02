@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ScofieldCommerce.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using ScofieldCommerce.Infrastructure.Persistence;
 namespace ScofieldCommerce.Infrastructure.Migrations
 {
     [DbContext(typeof(ScofieldDbContext))]
-    partial class ScofieldDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260702162725_RemoveDescricao")]
+    partial class RemoveDescricao
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

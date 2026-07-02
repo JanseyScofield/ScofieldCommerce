@@ -34,7 +34,7 @@ namespace ScofieldCommerce.Tests.Application.Services
             var clienteResult = Cliente.Criar("Razao", "Fantasia", Endereco.Criar("Rua", "1", "", "B", "C", "ES", Cep.Criar("12345678").Data!).Data!, Cnpj.Criar("60409075000152").Data!, "1", "N", "11999999999");
             mockClienteRepo.Setup(c => c.ObterPorIdAsync(1)).ReturnsAsync(clienteResult.Data!);
 
-            var produtoResult = Produto.Criar("Bobina 2kg", "Desc", 100.0m, 200.0m, 1);
+            var produtoResult = Produto.Criar("Bobina 2kg", 100.0m, 200.0m);
             var produto = produtoResult.Data!;
             typeof(Produto).GetProperty("Id")!.SetValue(produto, 1L);
             mockProdutoRepo.Setup(p => p.ObterPorIdAsync(1)).ReturnsAsync(produto);

@@ -15,7 +15,6 @@ export const Cadastros = () => {
 
   // Estados Form Produto
   const [nomeProduto, setNomeProduto] = useState('');
-  const [descricaoProduto, setDescricaoProduto] = useState('');
   const [precoMinimo, setPrecoMinimo] = useState('');
   const [precoMaximo, setPrecoMaximo] = useState('');
 
@@ -45,19 +44,18 @@ export const Cadastros = () => {
     try {
       await produtosCommands.criarProduto({
         nome: nomeProduto,
-        descricao: descricaoProduto,
         precoMinimo: Number(precoMinimo),
         precoMaximo: Number(precoMaximo)
       });
       showPopup('success', 'Produto cadastrado com sucesso!');
       // Limpa formulário
       setNomeProduto('');
-      setDescricaoProduto('');
       setPrecoMinimo('');
       setPrecoMaximo('');
     } catch (error: any) {
       console.error('Erro ao cadastrar produto:', error);
-      showPopup('error', `Erro ao cadastrar produto: ${error.response?.data?.Erro || error.message}`);
+      const mensagemErro = error.response?.data?.erro || error.response?.data?.Erro || error.response?.data?.message || error.message;
+      showPopup('error', mensagemErro);
     } finally {
       setSalvando(false);
     }
@@ -104,7 +102,8 @@ export const Cadastros = () => {
       setTelefoneComprador('');
     } catch (error: any) {
       console.error('Erro ao cadastrar cliente:', error);
-      showPopup('error', `Erro ao cadastrar cliente: ${error.response?.data?.Erro || error.message}`);
+      const mensagemErro = error.response?.data?.erro || error.response?.data?.Erro || error.response?.data?.message || error.message;
+      showPopup('error', mensagemErro);
     } finally {
       setSalvando(false);
     }
@@ -151,15 +150,6 @@ export const Cadastros = () => {
                   value={nomeProduto}
                   onChange={(e) => setNomeProduto(e.target.value)}
                 />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-slate-600 mb-1">Descrição</label>
-                <textarea
-                  className="input-field h-24"
-                  placeholder="Descrição detalhada..."
-                  value={descricaoProduto}
-                  onChange={(e) => setDescricaoProduto(e.target.value)}
-                ></textarea>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Preço Mínimo (R$) *</label>

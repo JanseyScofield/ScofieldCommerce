@@ -131,7 +131,8 @@ export const NovaVenda = () => {
       setPrazoPagamento(0);
     } catch (error: any) {
       console.error('Erro ao finalizar venda:', error);
-      showPopup('error', `Falha ao registrar venda: ${error.response?.data?.Erro || error.message}`);
+      const mensagemErro = error.response?.data?.erro || error.response?.data?.Erro || error.response?.data?.message || error.message;
+      showPopup('error', mensagemErro);
     } finally {
       setSalvando(false);
     }
