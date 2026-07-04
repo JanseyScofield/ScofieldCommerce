@@ -66,7 +66,7 @@ namespace ScofieldCommerce.Domain.Entities.Venda
         {
             if (clienteId <= 0) return Result<bool>.Error("Cliente Id deve ser maior que zero.");
             if (prazoPagamentoDias < 0) return Result<bool>.Error("Prazo de pagamento em dias não pode ser negativo.");
-            if (dataVenda > DateTime.Now) return Result<bool>.Error("Data da venda não pode ser no futuro.");
+            if (dataVenda > DateTime.UtcNow) return Result<bool>.Error("Data da venda não pode ser no futuro.");
 
             return Result<bool>.Ok(true);
         }

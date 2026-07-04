@@ -33,7 +33,9 @@ export const clientesQueries = {
         id: c.id || c.Id,
         razaoSocial: c.razaoSocial || c.RazaoSocial,
         nomeFantasia: c.nomeFantasia || c.NomeFantasia,
-        cnpj: c.cnpj || c.Cnpj || '',
+        cnpj: typeof (c.cnpj || c.Cnpj) === 'object'
+          ? ((c.cnpj?.valor || c.cnpj?.Valor || c.Cnpj?.valor || c.Cnpj?.Valor) ?? '')
+          : ((c.cnpj || c.Cnpj) ?? ''),
         inscricaoEstadual: c.inscricaoEstadual || c.InscricaoEstadual || '',
         nomeComprador: c.nomeComprador || c.NomeComprador || '',
         telefoneComprador: c.telefoneComprador || c.TelefoneComprador || ''

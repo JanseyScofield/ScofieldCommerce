@@ -44,7 +44,7 @@ namespace ScofieldCommerce.Application.Services
                     dto.ClienteId,
                     dto.PrazoPagamentoDias,
                     dto.PossuiNotaFiscal,
-                    DateTime.Now
+                    DateTime.UtcNow
                 );
 
                 if (!vendaResult.IsSuccess) return Result<Venda>.Error(vendaResult.ErrorMessage!);
