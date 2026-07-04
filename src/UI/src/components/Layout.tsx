@@ -17,10 +17,11 @@ export const Layout = () => {
     <div className="min-h-screen bg-slate-50 text-slate-800 flex">
       {/* Menu Lateral */}
       <aside className="w-64 bg-white border-r border-slate-200 flex flex-col">
-        <div className="h-20 flex items-center px-6 border-b border-slate-200">
-          <img src="/logo.svg" alt="Scofield Commerce" className="h-14 w-auto" />
+        <div className="h-20 flex flex-col justify-center px-6 border-b border-slate-200">
+          <img src="/logo.svg" alt="Scofield Commerce" className="h-15 w-auto self-start" />
+          <span className="text-[10px] text-right text-slate-400 font-semibold mt-0.5">V1.0</span>
         </div>
-        
+
         <nav className="flex-1 px-4 py-6 space-y-2">
           {navegacao.map((item) => {
             const estaAtivo = localizacao.pathname === item.caminho;
@@ -52,11 +53,6 @@ export const Layout = () => {
           <h2 className="text-xl font-bold text-slate-800">
             {navegacao.find(n => n.caminho === localizacao.pathname)?.nome || 'Dashboard'}
           </h2>
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center text-slate-900 font-bold shadow-sm">
-              JS
-            </div>
-          </div>
         </header>
         <div className="flex-1 overflow-auto p-8">
           <Outlet />
