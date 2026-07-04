@@ -1,17 +1,5 @@
 import { apiClient } from '../client';
-
-export interface ItemVendaComando {
-  produtoId: number;
-  quantidade: number;
-  valorUnitario: number;
-}
-
-export interface ComandoCriarVenda {
-  clienteId: number;
-  prazoPagamentoDias: number;
-  possuiNotaFiscal: boolean;
-  produtos: ItemVendaComando[];
-}
+import type { ItemVendaComando, ComandoCriarVenda } from '../../types';
 
 export const vendasCommands = {
   criarVenda: async (comando: ComandoCriarVenda) => {

@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Trophy, PieChart as PieChartIcon, AlertTriangle, Loader } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import { clientesQueries } from '../api/queries/clientes.queries';
-import type { RankingClienteDto, ClienteInativoDto } from '../api/queries/clientes.queries';
 import { Popup } from '../components/Popup';
+import type { RankingClienteDto, ClienteInativoDto } from '../types';
 
 export const RelatorioClientes = () => {
   const [diasInativos, setDiasInativos] = useState(30);

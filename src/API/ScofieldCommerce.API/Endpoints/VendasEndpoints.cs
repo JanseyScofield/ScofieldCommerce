@@ -23,9 +23,13 @@ namespace ScofieldCommerce.API.Endpoints
                 return Results.Ok(new { Mensagem = "Venda registrada com sucesso." });
             });
             
-            group.MapGet("/", async ([FromQuery] long? produtoId, [FromQuery] System.DateTime? data, [FromQuery] long? clienteId, IVendaRepository repo) =>
+            group.MapGet("/", async ([FromQuery] long? produtoId, [FromQuery] System.DateTime? data, [FromQuery] long? clienteId, IVendaService service) =>
             {
-                return Results.Ok(await repo.ObterVendasFiltrosAsync(produtoId, data, clienteId));
+                var result = await service.ObterVendasFiltrosAsync(produtoId, data, clienteId);
+                if (!result.IsSuccess)
+                    return Results.BadRequest(new { Erro = result.ErrorMessage });
+
+                return Results.Ok(result.Data);
             });
 
             group.MapGet("/ajuda-custo", async (IVendaService service) =>

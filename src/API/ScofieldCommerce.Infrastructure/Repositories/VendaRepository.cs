@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.EntityFrameworkCore;
@@ -34,12 +35,22 @@ namespace ScofieldCommerce.Infrastructure.Repositories
         {
             var connection = _context.Database.GetDbConnection();
             var sql = @"
-                SELECT DISTINCT v.*, c.""RazaoSocial""
+                SELECT 
+                    v.""Id"",
+                    v.""DataVenda"",
+                    v.""ValorTotal"",
+                    v.""ComissaoTotal"",
+                    v.""PrazoPagamentoDias"",
+                    v.""PossuiNotaFiscal"",
+                    c.""RazaoSocial"",
+                    pv.""Quantidade"" as ""ProdutoQuantidade"",
+                    p.""Nome"" as ""ProdutoNome""
                 FROM ""Vendas"" v
                 JOIN ""Clientes"" c ON v.""ClienteId"" = c.""Id""
                 LEFT JOIN ""ProdutosVendidos"" pv ON v.""Id"" = pv.""VendaId""
+                LEFT JOIN ""Produtos"" p ON pv.""ProdutoId"" = p.""Id""
                 WHERE 1 = 1
-                " + (produtoId.HasValue ? @" AND pv.""ProdutoId"" = @ProdutoId " : "") + @"
+                " + (produtoId.HasValue ? @" AND v.""Id"" IN (SELECT ""VendaId"" FROM ""ProdutosVendidos"" WHERE ""ProdutoId"" = @ProdutoId) " : "") + @"
                 " + (data.HasValue ? @" AND DATE(v.""DataVenda"") = DATE(@Data) " : "") + @"
                 " + (clienteId.HasValue ? @" AND v.""ClienteId"" = @ClienteId " : "") + @"
                 ORDER BY v.""DataVenda"" DESC;";

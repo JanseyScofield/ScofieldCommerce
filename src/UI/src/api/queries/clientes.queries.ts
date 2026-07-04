@@ -1,27 +1,5 @@
 import { apiClient } from '../client';
-
-export interface ClienteDto {
-  id: number;
-  razaoSocial: string;
-  nomeFantasia: string;
-  cnpj: string;
-  inscricaoEstadual: string;
-  nomeComprador: string;
-  telefoneComprador: string;
-}
-
-export interface RankingClienteDto {
-  razaoSocial: string;
-  quantidadeVendas: number;
-  valorTotal: number;
-  comissaoGerada: number;
-}
-
-export interface ClienteInativoDto {
-  razaoSocial: string;
-  ultimaCompra: string | null;
-  diasInativo: number;
-}
+import type { ClienteDto, RankingClienteDto, ClienteInativoDto } from '../../types';
 
 export const clientesQueries = {
   obterTodos: async (): Promise<ClienteDto[]> => {

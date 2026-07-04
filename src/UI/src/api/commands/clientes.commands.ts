@@ -1,20 +1,5 @@
 import { apiClient } from '../client';
-
-export interface ComandoCriarCliente {
-  razaoSocial: string;
-  nomeFantasia: string;
-  cep: string;
-  logradouro: string;
-  numero: string;
-  complemento: string;
-  bairro: string;
-  cidade: string;
-  estado: string;
-  cnpj: string;
-  inscricaoEstadual: string;
-  nomeComprador: string;
-  telefoneComprador: string;
-}
+import type { ComandoCriarCliente } from '../../types';
 
 export const clientesCommands = {
   criarCliente: async (comando: ComandoCriarCliente) => {

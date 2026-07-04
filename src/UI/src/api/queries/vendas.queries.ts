@@ -1,10 +1,5 @@
 import { apiClient } from '../client';
-
-export interface MetricasDashboard {
-  totalVendas: number;
-  totalProdutos: number;
-  totalComissao: number;
-}
+import type { MetricasDashboard, VendaHistorico } from '../../types';
 
 export const vendasQueries = {
   obterMetricasDashboard: async (): Promise<MetricasDashboard> => {
@@ -58,7 +53,7 @@ export const vendasQueries = {
     }
   },
 
-  obterHistoricoVendas: async (produtoId?: string, dataFiltro?: string, clienteId?: string) => {
+  obterHistoricoVendas: async (produtoId?: string, dataFiltro?: string, clienteId?: string): Promise<VendaHistorico[]> => {
     try {
       const params: any = {};
       if (produtoId) params.produtoId = Number(produtoId);
@@ -67,13 +62,18 @@ export const vendasQueries = {
 
       const { data } = await apiClient.get<any[]>('/vendas', { params });
       return data.map(v => ({
-        id: String(v.id || v.Id),
-        data: v.dataVenda || v.DataVenda,
-        cliente: v.razaoSocial || v.RazaoSocial || 'Cliente Desconhecido',
-        produto: 'Ver Detalhes', // O endpoint retorna v.* (sem listagem de produtos interna por venda nesse GET principal)
-        quantidade: v.quantidadeTotal || v.QuantidadeTotal || 1, 
-        total: Number(v.valorTotal || v.ValorTotal || 0),
-        status: 'Concluída' // Backend não possui campo de status de cancelamento exposto no DTO principal
+        id: Number(v.id || v.Id),
+        dataVenda: v.dataVenda || v.DataVenda,
+        valorTotal: Number(v.valorTotal || v.ValorTotal || 0),
+        comissaoTotal: Number(v.comissaoTotal || v.ComissaoTotal || 0),
+        prazoPagamentoDias: Number(v.prazoPagamentoDias || v.PrazoPagamentoDias || 0),
+        possuiNotaFiscal: Boolean(v.possuiNotaFiscal ?? v.PossuiNotaFiscal ?? false),
+        razaoSocial: v.razaoSocial || v.RazaoSocial || 'Cliente Desconhecido',
+        quantidadeTotal: Number(v.quantidadeTotal || v.QuantidadeTotal || 0),
+        itens: (v.itens || v.Itens || []).map((i: any) => ({
+          nome: i.nome || i.Nome,
+          quantidade: Number(i.quantidade || i.Quantidade || 0)
+        }))
       }));
     } catch (error) {
       console.error('Erro ao obter histórico de vendas:', error);

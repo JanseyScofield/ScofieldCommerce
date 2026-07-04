@@ -1,11 +1,5 @@
 import { apiClient } from '../client';
-
-export interface ProdutoDto {
-  id: number;
-  nome: string;
-  precoMinimo: number;
-  precoMaximo: number;
-}
+import type { ProdutoDto } from '../../types';
 
 export const produtosQueries = {
   obterTodos: async (): Promise<ProdutoDto[]> => {

@@ -2,18 +2,9 @@ import { useState, useEffect } from 'react';
 import { Trash2, Plus, CheckCircle, Loader } from 'lucide-react';
 import { vendasCommands } from '../api/commands/vendas.commands';
 import { clientesQueries } from '../api/queries/clientes.queries';
-import type { ClienteDto } from '../api/queries/clientes.queries';
 import { produtosQueries } from '../api/queries/produtos.queries';
-import type { ProdutoDto } from '../api/queries/produtos.queries';
 import { Popup } from '../components/Popup';
-
-interface ItemVenda {
-  id: string;
-  produtoId: number;
-  nomeProduto: string;
-  quantidade: number;
-  precoUnitario: number;
-}
+import type { ClienteDto, ProdutoDto, ItemVenda } from '../types';
 
 export const NovaVenda = () => {
   const [clientes, setClientes] = useState<ClienteDto[]>([]);

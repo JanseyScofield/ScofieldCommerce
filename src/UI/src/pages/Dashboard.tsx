@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { DollarSign, Package, TrendingUp } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { vendasQueries } from '../api/queries/vendas.queries';
-import type { MetricasDashboard } from '../api/queries/vendas.queries';
+import type { MetricasDashboard } from '../types';
 
 export const Dashboard = () => {
   const [metricas, setMetricas] = useState<MetricasDashboard | null>(null);

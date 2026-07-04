@@ -123,5 +123,45 @@ namespace ScofieldCommerce.Application.Services
                 return Result<CalculoVendaResultadoDto>.Error($"Erro interno ao calcular venda: {ex.Message}");
             }
         }
+
+        public async Task<Result<IEnumerable<dynamic>>> ObterVendasFiltrosAsync(long? produtoId, DateTime? data, long? clienteId)
+        {
+            try
+            {
+                var rows = await _vendaRepository.ObterVendasFiltrosAsync(produtoId, data, clienteId);
+
+                var vendas = rows.GroupBy(r => (long)r.Id)
+                    .Select(g => {
+                        var first = g.First();
+                        
+                        var itens = g.Where(r => r.ProdutoNome != null)
+                            .Select(r => new {
+                                nome = (string)r.ProdutoNome,
+                                quantidade = (int)r.ProdutoQuantidade
+                            })
+                            .OrderByDescending(i => i.quantidade)
+                            .ToList();
+
+                        return new {
+                            Id = (long)first.Id,
+                            DataVenda = (DateTime)first.DataVenda,
+                            ValorTotal = (decimal)first.ValorTotal,
+                            ComissaoTotal = (decimal)first.ComissaoTotal,
+                            PrazoPagamentoDias = (sbyte)first.PrazoPagamentoDias,
+                            PossuiNotaFiscal = (bool)first.PossuiNotaFiscal,
+                            RazaoSocial = (string)first.RazaoSocial,
+                            QuantidadeTotal = itens.Sum(i => i.quantidade),
+                            Itens = itens
+                        };
+                    })
+                    .ToList();
+
+                return Result<IEnumerable<dynamic>>.Ok((IEnumerable<dynamic>)vendas);
+            }
+            catch (Exception ex)
+            {
+                return Result<IEnumerable<dynamic>>.Error($"Erro ao obter histórico de vendas: {ex.Message}");
+            }
+        }
     }
 }

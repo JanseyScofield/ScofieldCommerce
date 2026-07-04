@@ -1,10 +1,5 @@
 import { apiClient } from '../client';
-
-export interface ComandoCriarProduto {
-  nome: string;
-  precoMinimo: number;
-  precoMaximo: number;
-}
+import type { ComandoCriarProduto } from '../../types';
 
 export const produtosCommands = {
   criarProduto: async (comando: ComandoCriarProduto) => {
