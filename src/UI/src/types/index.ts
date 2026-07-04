@@ -21,6 +21,8 @@ export interface ClienteInativoDto {
   razaoSocial: string;
   ultimaCompra: string | null;
   diasInativo: number;
+  nomeComprador?: string;
+  telefoneComprador?: string;
 }
 
 export interface ProdutoDto {

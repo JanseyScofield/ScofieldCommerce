@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Trophy, PieChart as PieChartIcon, AlertTriangle, Loader } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import { clientesQueries } from '../api/queries/clientes.queries';
-import { Popup } from '../components/Popup';
 import type { RankingClienteDto, ClienteInativoDto } from '../types';
 
 export const RelatorioClientes = () => {
@@ -14,11 +13,6 @@ export const RelatorioClientes = () => {
 
   const [carregandoListas, setCarregandoListas] = useState(true);
   const [carregandoInativos, setCarregandoInativos] = useState(false);
-  const [popup, setPopup] = useState<{show: boolean, type: 'success' | 'error', message: string} | null>(null);
-
-  const showPopup = (type: 'success' | 'error', message: string) => {
-    setPopup({ show: true, type, message });
-  };
 
   // Carrega Dados Iniciais (Ranking e Preferência)
   useEffect(() => {
@@ -56,34 +50,26 @@ export const RelatorioClientes = () => {
   }, [diasInativos]);
 
   const CORES = [
-    '#eab308', 
-    '#3b82f6', 
-    '#ec4899', 
-    '#10b981', 
-    '#8b5cf6', 
-    '#f97316', 
-    '#14b8a6', 
-    '#6366f1', 
-    '#ef4444', 
-    '#06b6d4', 
-    '#a855f7', 
-    '#f43f5e', 
-    '#22c55e', 
-    '#84cc16', 
-    '#64748b'  
+    '#eab308',
+    '#3b82f6',
+    '#ec4899',
+    '#10b981',
+    '#8b5cf6',
+    '#f97316',
+    '#14b8a6',
+    '#6366f1',
+    '#ef4444',
+    '#06b6d4',
+    '#a855f7',
+    '#f43f5e',
+    '#22c55e',
+    '#84cc16',
+    '#64748b'
   ];
 
   if (carregandoListas) return <div className="p-8 text-slate-500 text-center animate-pulse">Carregando inteligência de clientes...</div>;
 
   return (
-    <>
-      <Popup 
-        show={popup?.show ?? false}
-        type={popup?.type ?? 'error'}
-        message={popup?.message ?? ''}
-        onClose={() => setPopup(null)}
-      />
-
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
       {/* Painel 1 - Top Clientes */}
       <div className="card p-6 lg:col-span-1">
@@ -93,7 +79,7 @@ export const RelatorioClientes = () => {
           </div>
           <h2 className="text-xl font-semibold text-slate-800">Top Clientes</h2>
         </div>
-        
+
         <div className="space-y-4">
           {topClientes.length === 0 ? (
             <div className="text-slate-400 py-8 text-center text-sm">Nenhum cliente no ranking no momento.</div>
@@ -101,11 +87,10 @@ export const RelatorioClientes = () => {
             topClientes.map((cliente, index) => (
               <div key={cliente.razaoSocial} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
                 <div className="flex items-center">
-                  <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm mr-4 ${
-                    index === 0 ? 'bg-yellow-400 text-slate-900' :
-                    index === 1 ? 'bg-slate-200 text-slate-700' :
-                    index === 2 ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-500'
-                  }`}>
+                  <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm mr-4 ${index === 0 ? 'bg-yellow-400 text-slate-900' :
+                      index === 1 ? 'bg-slate-200 text-slate-700' :
+                        index === 2 ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-500'
+                    }`}>
                     {index + 1}
                   </span>
                   <div>
@@ -153,7 +138,7 @@ export const RelatorioClientes = () => {
                     <Cell key={`cell-${index}`} fill={CORES[index % CORES.length]} />
                   ))}
                 </Pie>
-                <RechartsTooltip 
+                <RechartsTooltip
                   formatter={(valor: any) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor))}
                   contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
                   itemStyle={{ color: '#1e293b' }}
@@ -177,7 +162,7 @@ export const RelatorioClientes = () => {
           </div>
           <div className="flex items-center space-x-3">
             <span className="text-sm text-slate-500">Mostrar inativos há mais de:</span>
-            <select 
+            <select
               className="input-field py-1.5 w-24"
               value={diasInativos}
               onChange={(e) => setDiasInativos(Number(e.target.value))}
@@ -189,7 +174,7 @@ export const RelatorioClientes = () => {
             </select>
           </div>
         </div>
-        
+
         <div className="table-container">
           {carregandoInativos ? (
             <div className="flex items-center justify-center py-8 text-slate-500 gap-2">
@@ -201,23 +186,25 @@ export const RelatorioClientes = () => {
               <thead>
                 <tr>
                   <th>Cliente</th>
+                  <th>Comprador</th>
                   <th>Última Compra</th>
                   <th>Dias Inativo</th>
-                  <th>Ação Recomendada</th>
+                  <th>Entrar em Contato</th>
                 </tr>
               </thead>
               <tbody>
                 {clientesEmRisco.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="text-center py-8 text-slate-400">Nenhum cliente inativo encontrado para este período.</td>
+                    <td colSpan={5} className="text-center py-8 text-slate-400">Nenhum cliente inativo encontrado para este período.</td>
                   </tr>
                 ) : (
                   clientesEmRisco.map((cliente) => (
                     <tr key={cliente.razaoSocial}>
                       <td className="font-semibold text-slate-800">{cliente.razaoSocial}</td>
+                      <td className="text-slate-700">{cliente.nomeComprador || 'Não informado'}</td>
                       <td className="text-slate-600">
-                        {cliente.ultimaCompra 
-                          ? new Date(cliente.ultimaCompra).toLocaleDateString('pt-BR') 
+                        {cliente.ultimaCompra
+                          ? new Date(cliente.ultimaCompra).toLocaleDateString('pt-BR')
                           : 'Nunca comprou'}
                       </td>
                       <td>
@@ -226,13 +213,15 @@ export const RelatorioClientes = () => {
                         </span>
                       </td>
                       <td>
-                        <a 
-                          href={`tel:${cliente.razaoSocial}`} 
-                          onClick={(e) => { e.preventDefault(); showPopup('success', `Entrando em contato com ${cliente.razaoSocial}...`); }}
-                          className="btn-secondary py-1.5 px-4 text-xs font-bold hover:text-yellow-600 transition-colors inline-block"
-                        >
-                          Entrar em Contato
-                        </a>
+                        {cliente.telefoneComprador ? (
+                          <span
+                            className="btn-secondary py-1.5 px-4 text-xs font-bold hover:text-yellow-600 transition-colors inline-block"
+                          >
+                            {cliente.telefoneComprador}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 text-xs">Sem telefone</span>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -243,6 +232,5 @@ export const RelatorioClientes = () => {
         </div>
       </div>
     </div>
-    </>
   );
 };

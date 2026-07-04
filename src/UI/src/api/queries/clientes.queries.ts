@@ -71,7 +71,9 @@ export const clientesQueries = {
       return data.map(r => ({
         razaoSocial: r.razaoSocial || r.RazaoSocial,
         ultimaCompra: r.ultimaCompra || r.UltimaCompra || null,
-        diasInativo: Number(r.diasInativo || r.DiasInativo || 0)
+        diasInativo: Number(r.diasInativo || r.DiasInativo || 0),
+        nomeComprador: r.nomeComprador || r.NomeComprador || '',
+        telefoneComprador: r.telefoneComprador || r.TelefoneComprador || ''
       }));
     } catch (error) {
       console.error('Erro ao obter clientes em risco:', error);

@@ -61,11 +61,13 @@ namespace ScofieldCommerce.Infrastructure.Repositories
             var sql = @"
                 SELECT 
                     c.""RazaoSocial"" as ""RazaoSocial"", 
+                    c.""NomeComprador"" as ""NomeComprador"", 
+                    c.""TelefoneComprador"" as ""TelefoneComprador"", 
                     MAX(v.""DataVenda"") as ""UltimaCompra"",
                     EXTRACT(DAY FROM (NOW() - MAX(v.""DataVenda""))) as ""DiasInativo""
                 FROM ""Clientes"" c
                 LEFT JOIN ""Vendas"" v ON c.""Id"" = v.""ClienteId""
-                GROUP BY c.""RazaoSocial""
+                GROUP BY c.""Id"", c.""RazaoSocial"", c.""NomeComprador"", c.""TelefoneComprador""
                 HAVING MAX(v.""DataVenda"") IS NULL OR EXTRACT(DAY FROM (NOW() - MAX(v.""DataVenda""))) >= @DiasInativo
                 ORDER BY ""DiasInativo"" DESC;
             ";
