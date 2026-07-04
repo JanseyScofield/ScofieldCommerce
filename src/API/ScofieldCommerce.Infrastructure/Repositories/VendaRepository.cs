@@ -63,14 +63,18 @@ namespace ScofieldCommerce.Infrastructure.Repositories
             var connection = _context.Database.GetDbConnection();
             var sql = @"
                 SELECT 
-                    DATE(v.""DataVenda"") as Dia,
-                    SUM(v.""ValorTotal"") as ValorVendido,
-                    SUM(pv.""Quantidade"") as QuantidadeProdutos,
-                    SUM(v.""ComissaoTotal"") as Comissao
+                    DATE(v.""DataVenda"") as ""Dia"",
+                    SUM(v.""ValorTotal"") as ""ValorVendido"",
+                    COALESCE(SUM(pv.TotalQtd), 0) as ""QuantidadeProdutos"",
+                    SUM(v.""ComissaoTotal"") as ""Comissao""
                 FROM ""Vendas"" v
-                JOIN ""ProdutosVendidos"" pv ON v.""Id"" = pv.""VendaId""
+                LEFT JOIN (
+                    SELECT ""VendaId"", SUM(""Quantidade"") as TotalQtd
+                    FROM ""ProdutosVendidos""
+                    GROUP BY ""VendaId""
+                ) pv ON v.""Id"" = pv.""VendaId""
                 GROUP BY DATE(v.""DataVenda"")
-                ORDER BY Dia DESC;
+                ORDER BY ""Dia"" DESC;
             ";
             return await connection.QueryAsync(sql);
         }
@@ -80,13 +84,13 @@ namespace ScofieldCommerce.Infrastructure.Repositories
             var connection = _context.Database.GetDbConnection();
              var sql = @"
                 SELECT 
-                    EXTRACT(MONTH FROM v.""DataVenda"") as Mes,
-                    EXTRACT(YEAR FROM v.""DataVenda"") as Ano,
-                    SUM(v.""ValorTotal"") as ValorVendido,
-                    SUM(v.""ComissaoTotal"") as Comissao
+                    EXTRACT(MONTH FROM v.""DataVenda"") as ""Mes"",
+                    EXTRACT(YEAR FROM v.""DataVenda"") as ""Ano"",
+                    SUM(v.""ValorTotal"") as ""ValorVendido"",
+                    SUM(v.""ComissaoTotal"") as ""Comissao""
                 FROM ""Vendas"" v
                 GROUP BY EXTRACT(MONTH FROM v.""DataVenda""), EXTRACT(YEAR FROM v.""DataVenda"")
-                ORDER BY Ano DESC, Mes DESC;
+                ORDER BY ""Ano"" DESC, ""Mes"" DESC;
             ";
             return await connection.QueryAsync(sql);
         }
@@ -96,14 +100,14 @@ namespace ScofieldCommerce.Infrastructure.Repositories
             var connection = _context.Database.GetDbConnection();
              var sql = @"
                 SELECT 
-                    c.""RazaoSocial"",
-                    COUNT(v.""Id"") as QuantidadeVendas,
-                    SUM(v.""ValorTotal"") as ValorTotal,
-                    SUM(v.""ComissaoTotal"") as ComissaoGerada
+                    c.""RazaoSocial"" as ""RazaoSocial"",
+                    COUNT(v.""Id"") as ""QuantidadeVendas"",
+                    SUM(v.""ValorTotal"") as ""ValorTotal"",
+                    SUM(v.""ComissaoTotal"") as ""ComissaoGerada""
                 FROM ""Clientes"" c
                 JOIN ""Vendas"" v ON c.""Id"" = v.""ClienteId""
                 GROUP BY c.""RazaoSocial""
-                ORDER BY ValorTotal DESC;
+                ORDER BY ""ValorTotal"" DESC;
             ";
             return await connection.QueryAsync(sql);
         }

@@ -9,30 +9,33 @@ export const vendasQueries = {
         // Pega o dia mais recente (o SQL ordena por Dia DESC)
         const maisRecente = data[0];
         return {
-          totalVendas: Number(maisRecente.valorVendido || 0),
-          totalProdutos: Number(maisRecente.quantidadeProdutos || 0),
-          totalComissao: Number(maisRecente.comissao || 0),
+          totalVendas: Number(maisRecente.ValorVendido || 0),
+          totalProdutos: Number(maisRecente.QuantidadeProdutos || 0),
+          totalComissao: Number(maisRecente.Comissao || 0),
         };
       }
     } catch (error) {
       console.error('Erro ao buscar métricas do dashboard:', error);
     }
-    
+
     return {
       totalVendas: 0,
       totalProdutos: 0,
       totalComissao: 0
     };
   },
-  
+
   obterEvolucaoDiariaVendas: async () => {
     try {
       const { data } = await apiClient.get<any[]>('/relatorios/vendas/dia');
       // Mapeia e inverte para ordem cronológica (esquerda para a direita no gráfico)
-      return data.map(d => ({
-        data: d.dia ? new Date(d.dia).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '',
-        valor: Number(d.valorVendido || 0)
-      })).reverse();
+      return data.map(d => {
+        const diaVal = d.dia || d.Dia;
+        return {
+          data: diaVal ? new Date(diaVal).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '',
+          valor: Number(d.ValorVendido || 0)
+        };
+      }).reverse();
     } catch (error) {
       console.error('Erro ao obter evolução diária:', error);
       return [];
@@ -43,10 +46,13 @@ export const vendasQueries = {
     try {
       const { data } = await apiClient.get<any[]>('/relatorios/vendas/mes');
       const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-      return data.map(d => ({
-        mes: meses[(d.mes || 1) - 1],
-        valor: Number(d.valorVendido || 0)
-      })).reverse();
+      return data.map(d => {
+        const mesVal = Number(d.mes || d.Mes || 1);
+        return {
+          mes: meses[mesVal - 1] || 'Jan',
+          valor: Number(d.ValorVendido || 0)
+        };
+      }).reverse();
     } catch (error) {
       console.error('Erro ao obter comparativo mensal:', error);
       return [];

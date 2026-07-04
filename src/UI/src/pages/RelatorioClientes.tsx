@@ -55,7 +55,23 @@ export const RelatorioClientes = () => {
     carregarInativosFn();
   }, [diasInativos]);
 
-  const CORES = ['#facc15', '#38bdf8', '#fb7185', '#94a3b8'];
+  const CORES = [
+    '#eab308', 
+    '#3b82f6', 
+    '#ec4899', 
+    '#10b981', 
+    '#8b5cf6', 
+    '#f97316', 
+    '#14b8a6', 
+    '#6366f1', 
+    '#ef4444', 
+    '#06b6d4', 
+    '#a855f7', 
+    '#f43f5e', 
+    '#22c55e', 
+    '#84cc16', 
+    '#64748b'  
+  ];
 
   if (carregandoListas) return <div className="p-8 text-slate-500 text-center animate-pulse">Carregando inteligência de clientes...</div>;
 

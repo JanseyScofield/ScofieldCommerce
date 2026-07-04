@@ -43,14 +43,14 @@ namespace ScofieldCommerce.Infrastructure.Repositories
             var connection = _context.Database.GetDbConnection();
             var sql = @"
                 SELECT 
-                    c.""RazaoSocial"", 
-                    EXTRACT(MONTH FROM v.""DataVenda"") as Mes,
-                    EXTRACT(YEAR FROM v.""DataVenda"") as Ano,
-                    SUM(v.""ValorTotal"") as TotalComprado
+                    c.""RazaoSocial"" as ""RazaoSocial"", 
+                    EXTRACT(MONTH FROM v.""DataVenda"") as ""Mes"",
+                    EXTRACT(YEAR FROM v.""DataVenda"") as ""Ano"",
+                    SUM(v.""ValorTotal"") as ""TotalComprado""
                 FROM ""Clientes"" c
                 JOIN ""Vendas"" v ON c.""Id"" = v.""ClienteId""
                 GROUP BY c.""RazaoSocial"", EXTRACT(MONTH FROM v.""DataVenda""), EXTRACT(YEAR FROM v.""DataVenda"")
-                ORDER BY Ano DESC, Mes DESC;
+                ORDER BY ""Ano"" DESC, ""Mes"" DESC;
             ";
             return await connection.QueryAsync(sql);
         }
@@ -60,14 +60,14 @@ namespace ScofieldCommerce.Infrastructure.Repositories
             var connection = _context.Database.GetDbConnection();
             var sql = @"
                 SELECT 
-                    c.""RazaoSocial"", 
-                    MAX(v.""DataVenda"") as UltimaCompra,
-                    EXTRACT(DAY FROM (NOW() - MAX(v.""DataVenda""))) as DiasInativo
+                    c.""RazaoSocial"" as ""RazaoSocial"", 
+                    MAX(v.""DataVenda"") as ""UltimaCompra"",
+                    EXTRACT(DAY FROM (NOW() - MAX(v.""DataVenda""))) as ""DiasInativo""
                 FROM ""Clientes"" c
                 LEFT JOIN ""Vendas"" v ON c.""Id"" = v.""ClienteId""
                 GROUP BY c.""RazaoSocial""
                 HAVING MAX(v.""DataVenda"") IS NULL OR EXTRACT(DAY FROM (NOW() - MAX(v.""DataVenda""))) >= @DiasInativo
-                ORDER BY DiasInativo DESC;
+                ORDER BY ""DiasInativo"" DESC;
             ";
             return await connection.QueryAsync(sql, new { DiasInativo = diasInativo });
         }
@@ -77,9 +77,9 @@ namespace ScofieldCommerce.Infrastructure.Repositories
             var connection = _context.Database.GetDbConnection();
             var sql = @"
                 SELECT 
-                    c.""RazaoSocial"",
-                    p.""Nome"" as Produto,
-                    SUM(pv.""ValorUnitario"" * pv.""Quantidade"") as ValorComprado
+                    c.""RazaoSocial"" as ""RazaoSocial"",
+                    p.""Nome"" as ""Produto"",
+                    SUM(pv.""ValorUnitario"" * pv.""Quantidade"") as ""ValorComprado""
                 FROM ""Clientes"" c
                 JOIN ""Vendas"" v ON c.""Id"" = v.""ClienteId""
                 JOIN ""ProdutosVendidos"" pv ON v.""Id"" = pv.""VendaId""
