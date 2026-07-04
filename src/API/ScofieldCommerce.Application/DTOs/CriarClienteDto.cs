@@ -12,7 +12,7 @@ namespace ScofieldCommerce.Application.DTOs
         public string Cidade { get; set; } = string.Empty;
         public string Estado { get; set; } = string.Empty;
         public string Cnpj { get; set; } = string.Empty;
-        public string InscricaoEstadual { get; set; } = string.Empty;
+        public string? InscricaoEstadual { get; set; }
         public string NomeComprador { get; set; } = string.Empty;
         public string TelefoneComprador { get; set; } = string.Empty;
     }

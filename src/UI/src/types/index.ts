@@ -5,7 +5,7 @@ export interface ClienteDto {
   razaoSocial: string;
   nomeFantasia: string;
   cnpj: string;
-  inscricaoEstadual: string;
+  inscricaoEstadual: string | null;
   nomeComprador: string;
   telefoneComprador: string;
 }
@@ -26,10 +26,8 @@ export interface ClienteInativoDto {
 export interface ProdutoDto {
   id: number;
   nome: string;
-  descricao: string;
   precoMinimo: number;
   precoMaximo: number;
-  regraComissaoId: number;
 }
 
 export interface MetricasDashboard {
@@ -86,7 +84,7 @@ export interface ComandoCriarCliente {
   cidade: string;
   estado: string;
   cnpj: string;
-  inscricaoEstadual: string;
+  inscricaoEstadual?: string;
   nomeComprador: string;
   telefoneComprador: string;
 }

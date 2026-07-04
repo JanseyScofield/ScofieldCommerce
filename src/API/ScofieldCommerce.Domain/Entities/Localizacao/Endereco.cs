@@ -21,7 +21,7 @@ namespace ScofieldCommerce.Domain.Entities.Localizacao
             Complemento = complemento;
             Bairro = bairro;
             Cidade = cidade;
-            Estado = estado;
+            Estado = estado.Trim().ToUpper();
             CEP = cep;
         }
 
@@ -43,7 +43,7 @@ namespace ScofieldCommerce.Domain.Entities.Localizacao
             Complemento = complemento;
             Bairro = bairro;
             Cidade = cidade;
-            Estado = estado;
+            Estado = estado.Trim().ToUpper();
             CEP = cep;
 
             return Result<bool>.Ok(true);
@@ -56,6 +56,16 @@ namespace ScofieldCommerce.Domain.Entities.Localizacao
             if (string.IsNullOrWhiteSpace(bairro)) return Result<bool>.Error("O bairro não pode ser vazio.");
             if (string.IsNullOrWhiteSpace(cidade)) return Result<bool>.Error("A cidade não pode ser vazia.");
             if (string.IsNullOrWhiteSpace(estado)) return Result<bool>.Error("O estado não pode ser vazio.");
+
+            var estadoUpper = estado.Trim().ToUpper();
+            var estadosValidos = new System.Collections.Generic.HashSet<string>
+            {
+                "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", 
+                "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+            };
+
+            if (estadoUpper.Length != 2 || !estadosValidos.Contains(estadoUpper))
+                return Result<bool>.Error("O estado informado é inválido. Digite uma UF válida com 2 letras (ex: SP).");
 
             return Result<bool>.Ok(true);
         }

@@ -10,7 +10,7 @@ namespace ScofieldCommerce.Domain.Entities
         public string NomeFantasia { get; private set; } = null!;
         public Endereco Endereco { get; private set; } = null!;
         public Cnpj Cnpj { get; private set; } = null!;
-        public string InscricaoEstadual { get; private set; } = null!;
+        public string? InscricaoEstadual { get; private set; }
         public string NomeComprador { get; private set; } = null!;
         public string TelefoneComprador { get; private set; } = null!;
 
@@ -18,7 +18,7 @@ namespace ScofieldCommerce.Domain.Entities
 
         private Cliente
         (
-            string razaoSocial, string nomeFantasia, Endereco endereco, Cnpj cnpj, string inscricaoEstadual, 
+            string razaoSocial, string nomeFantasia, Endereco endereco, Cnpj cnpj, string? inscricaoEstadual, 
             string nomeComprador, string telefoneComprador
         )
         {
@@ -33,7 +33,7 @@ namespace ScofieldCommerce.Domain.Entities
 
         public static Result<Cliente> Criar
         (
-            string razaoSocial, string nomeFantasia, Endereco endereco, Cnpj cnpj, string inscricaoEstadual, 
+            string razaoSocial, string nomeFantasia, Endereco endereco, Cnpj cnpj, string? inscricaoEstadual, 
             string nomeComprador, string telefoneComprador
         )
         {
@@ -45,7 +45,7 @@ namespace ScofieldCommerce.Domain.Entities
 
         public Result<bool> Atualizar
         (
-            string razaoSocial, string nomeFantasia, Endereco endereco, Cnpj cnpj, string inscricaoEstadual, 
+            string razaoSocial, string nomeFantasia, Endereco endereco, Cnpj cnpj, string? inscricaoEstadual, 
             string nomeComprador, string telefoneComprador
         )
         {
@@ -65,7 +65,7 @@ namespace ScofieldCommerce.Domain.Entities
 
         private static Result<bool> Validar
         (
-            string razaoSocial, string nomeFantasia, Endereco endereco, Cnpj cnpj, string inscricaoEstadual, 
+            string razaoSocial, string nomeFantasia, Endereco endereco, Cnpj cnpj, string? inscricaoEstadual, 
             string nomeComprador, string telefoneComprador
         )
         {
@@ -73,7 +73,6 @@ namespace ScofieldCommerce.Domain.Entities
             if (string.IsNullOrWhiteSpace(nomeFantasia)) return Result<bool>.Error("O nome fantasia não pode ser vazio.");
             if (endereco == null) return Result<bool>.Error("O endereço é obrigatório.");
             if (cnpj == null) return Result<bool>.Error("O CNPJ é obrigatório.");
-            if (string.IsNullOrWhiteSpace(inscricaoEstadual)) return Result<bool>.Error("A inscrição estadual não pode ser vazia.");
             if (string.IsNullOrWhiteSpace(nomeComprador)) return Result<bool>.Error("O nome do comprador não pode ser vazio.");
             if (string.IsNullOrWhiteSpace(telefoneComprador)) return Result<bool>.Error("O telefone do comprador não pode ser vazio.");
 

@@ -3,6 +3,7 @@ import { Save, Loader } from 'lucide-react';
 import { produtosCommands } from '../api/commands/produtos.commands';
 import { clientesCommands } from '../api/commands/clientes.commands';
 import { Popup } from '../components/Popup';
+import { cepQueries } from '../api/queries/cep.queries';
 
 export const Cadastros = () => {
   const [abaAtiva, setAbaAtiva] = useState<'produto' | 'cliente'>('produto');
@@ -61,10 +62,28 @@ export const Cadastros = () => {
     }
   };
 
+  const buscarCep = async (cepVal: string) => {
+    const data = await cepQueries.buscar(cepVal);
+    if (data) {
+      if (data.logradouro) setLogradouro(data.logradouro);
+      if (data.bairro) setBairro(data.bairro);
+      if (data.localidade) setCidade(data.localidade);
+      if (data.uf) setEstado(data.uf.toUpperCase());
+    }
+  };
+
+  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\D/g, '');
+    setCep(val);
+    if (val.length === 8) {
+      buscarCep(val);
+    }
+  };
+
   const salvarCliente = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!razaoSocial || !nomeFantasia || !cnpj || !inscricaoEstadual || !cep || !logradouro || !numero || !bairro || !cidade || !estado || !nomeComprador || !telefoneComprador) {
-      showPopup('error', 'Todos os campos (exceto complemento) são obrigatórios para validação da entidade Cliente.');
+    if (!razaoSocial || !nomeFantasia || !cnpj || !cep || !logradouro || !numero || !bairro || !cidade || !estado || !nomeComprador || !telefoneComprador) {
+      showPopup('error', 'Todos os campos (exceto complemento e inscrição estadual) são obrigatórios para validação da entidade Cliente.');
       return;
     }
 
@@ -147,6 +166,7 @@ export const Cadastros = () => {
                   type="text"
                   className="input-field"
                   placeholder="Ex: Bobina Picotada  25 x 35"
+                  maxLength={150}
                   value={nomeProduto}
                   onChange={(e) => setNomeProduto(e.target.value)}
                 />
@@ -191,6 +211,7 @@ export const Cadastros = () => {
                   type="text"
                   className="input-field"
                   placeholder="Razão Social"
+                  maxLength={200}
                   value={razaoSocial}
                   onChange={(e) => setRazaoSocial(e.target.value)}
                 />
@@ -201,6 +222,7 @@ export const Cadastros = () => {
                   type="text"
                   className="input-field"
                   placeholder="Nome Fantasia"
+                  maxLength={200}
                   value={nomeFantasia}
                   onChange={(e) => setNomeFantasia(e.target.value)}
                 />
@@ -210,17 +232,19 @@ export const Cadastros = () => {
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="Somente números (ex: 12345678000199)"
+                  placeholder="Ex: 12345678000199 (somente números)"
+                  maxLength={14}
                   value={cnpj}
-                  onChange={(e) => setCnpj(e.target.value)}
+                  onChange={(e) => setCnpj(e.target.value.replace(/\D/g, ''))}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Inscrição Estadual *</label>
+                <label className="block text-sm font-medium text-slate-600 mb-1">Inscrição Estadual</label>
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="Inscrição Estadual"
+                  placeholder="Inscrição Estadual (opcional)"
+                  maxLength={50}
                   value={inscricaoEstadual}
                   onChange={(e) => setInscricaoEstadual(e.target.value)}
                 />
@@ -235,9 +259,10 @@ export const Cadastros = () => {
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="Ex: 89000000"
+                  placeholder="Ex: 89000000 (somente números)"
+                  maxLength={8}
                   value={cep}
-                  onChange={(e) => setCep(e.target.value)}
+                  onChange={handleCepChange}
                 />
               </div>
               <div>
@@ -246,6 +271,7 @@ export const Cadastros = () => {
                   type="text"
                   className="input-field"
                   placeholder="Rua / Avenida"
+                  maxLength={200}
                   value={logradouro}
                   onChange={(e) => setLogradouro(e.target.value)}
                 />
@@ -256,6 +282,7 @@ export const Cadastros = () => {
                   type="text"
                   className="input-field"
                   placeholder="Nº"
+                  maxLength={20}
                   value={numero}
                   onChange={(e) => setNumero(e.target.value)}
                 />
@@ -266,6 +293,7 @@ export const Cadastros = () => {
                   type="text"
                   className="input-field"
                   placeholder="Apto, Sala, Bloco"
+                  maxLength={100}
                   value={complemento}
                   onChange={(e) => setComplemento(e.target.value)}
                 />
@@ -276,6 +304,7 @@ export const Cadastros = () => {
                   type="text"
                   className="input-field"
                   placeholder="Bairro"
+                  maxLength={100}
                   value={bairro}
                   onChange={(e) => setBairro(e.target.value)}
                 />
@@ -286,6 +315,7 @@ export const Cadastros = () => {
                   type="text"
                   className="input-field"
                   placeholder="Cidade"
+                  maxLength={100}
                   value={cidade}
                   onChange={(e) => setCidade(e.target.value)}
                 />
@@ -296,8 +326,9 @@ export const Cadastros = () => {
                   type="text"
                   className="input-field"
                   placeholder="UF (ex: SP)"
+                  maxLength={2}
                   value={estado}
-                  onChange={(e) => setEstado(e.target.value)}
+                  onChange={(e) => setEstado(e.target.value.toUpperCase())}
                 />
               </div>
 
@@ -311,6 +342,7 @@ export const Cadastros = () => {
                   type="text"
                   className="input-field"
                   placeholder="Nome do responsável pelas compras"
+                  maxLength={150}
                   value={nomeComprador}
                   onChange={(e) => setNomeComprador(e.target.value)}
                 />
@@ -320,9 +352,10 @@ export const Cadastros = () => {
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="Telefone ou celular"
+                  placeholder="Ex: 11999999999 (somente números)"
+                  maxLength={20}
                   value={telefoneComprador}
-                  onChange={(e) => setTelefoneComprador(e.target.value)}
+                  onChange={(e) => setTelefoneComprador(e.target.value.replace(/\D/g, ''))}
                 />
               </div>
             </div>

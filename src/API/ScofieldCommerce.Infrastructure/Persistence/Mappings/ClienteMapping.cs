@@ -14,7 +14,7 @@ namespace ScofieldCommerce.Infrastructure.Persistence.Mappings
             
             builder.Property(c => c.RazaoSocial).IsRequired().HasMaxLength(200);
             builder.Property(c => c.NomeFantasia).IsRequired().HasMaxLength(200);
-            builder.Property(c => c.InscricaoEstadual).IsRequired().HasMaxLength(50);
+            builder.Property(c => c.InscricaoEstadual).IsRequired(false).HasMaxLength(50);
             builder.Property(c => c.NomeComprador).IsRequired().HasMaxLength(150);
             builder.Property(c => c.TelefoneComprador).IsRequired().HasMaxLength(20);
 
