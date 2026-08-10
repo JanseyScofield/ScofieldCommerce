@@ -7,6 +7,7 @@ namespace ScofieldCommerce.Application.Interfaces.Repositories
     public interface IClienteRepository
     {
         Task<IEnumerable<Cliente>> ObterTodosAsync();
+        Task<IEnumerable<Cliente>> ObterFiltradosAsync(string? nome, string? cnpj);
         Task AdicionarAsync(Cliente cliente);
         Task AtualizarAsync(Cliente cliente);
         Task<Cliente?> ObterPorIdAsync(long id);

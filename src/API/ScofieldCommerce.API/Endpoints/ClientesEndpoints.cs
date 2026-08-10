@@ -14,9 +14,9 @@ namespace ScofieldCommerce.API.Endpoints
         {
             var group = app.MapGroup("/clientes").WithTags("Clientes");
 
-            group.MapGet("/", async (IClienteRepository repo) =>
+            group.MapGet("/", async ([FromQuery] string? nome, [FromQuery] string? cnpj, IClienteRepository repo) =>
             {
-                var clientes = await repo.ObterTodosAsync();
+                var clientes = await repo.ObterFiltradosAsync(nome, cnpj);
                 return Results.Ok(clientes);
             });
 

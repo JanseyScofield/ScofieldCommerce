@@ -2,11 +2,13 @@ import { apiClient } from '../client';
 import type { ClienteDto, RankingClienteDto, ClienteInativoDto } from '../../types';
 
 export const clientesQueries = {
-  obterTodos: async (): Promise<ClienteDto[]> => {
+  obterTodos: async (nome?: string, cnpj?: string): Promise<ClienteDto[]> => {
     try {
-      // O endpoint /clientes GET pode ainda não estar mapeado no back-end, 
-      // mas fazemos a chamada direta conforme solicitado
-      const { data } = await apiClient.get<any[]>('/clientes');
+      const params: Record<string, string> = {};
+      if (nome) params.nome = nome;
+      if (cnpj) params.cnpj = cnpj;
+
+      const { data } = await apiClient.get<any[]>('/clientes', { params });
       return data.map(c => ({
         id: c.id || c.Id,
         razaoSocial: c.razaoSocial || c.RazaoSocial,
@@ -19,9 +21,13 @@ export const clientesQueries = {
         telefoneComprador: c.telefoneComprador || c.TelefoneComprador || ''
       }));
     } catch (error) {
-      console.error('Erro ao obter todos os clientes:', error);
+      console.error('Erro ao obter clientes:', error);
       return [];
     }
+  },
+
+  obterFiltrados: async (nome?: string, cnpj?: string): Promise<ClienteDto[]> => {
+    return clientesQueries.obterTodos(nome, cnpj);
   },
 
   obterRankingClientes: async (): Promise<RankingClienteDto[]> => {

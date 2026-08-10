@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,27 @@ namespace ScofieldCommerce.Infrastructure.Repositories
 
         public async Task<IEnumerable<Cliente>> ObterTodosAsync()
         {
-            return await _context.Clientes.AsNoTracking().ToListAsync();
+            return await _context.Clientes.AsNoTracking().OrderBy(c => c.RazaoSocial).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Cliente>> ObterFiltradosAsync(string? nome, string? cnpj)
+        {
+            var query = _context.Clientes.AsNoTracking().AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(nome))
+            {
+                var nomeTrim = nome.Trim().ToLower();
+                query = query.Where(c => c.RazaoSocial.ToLower().Contains(nomeTrim) || c.NomeFantasia.ToLower().Contains(nomeTrim));
+            }
+
+            if (!string.IsNullOrWhiteSpace(cnpj))
+            {
+                var cnpjDigits = new string(cnpj.Where(char.IsDigit).ToArray());
+                var cnpjRaw = cnpj.Trim();
+                query = query.Where(c => c.Cnpj.Valor.Contains(cnpjRaw) || (cnpjDigits.Length > 0 && c.Cnpj.Valor.Contains(cnpjDigits)));
+            }
+
+            return await query.OrderBy(c => c.RazaoSocial).ToListAsync();
         }
 
         public async Task AdicionarAsync(Cliente cliente)

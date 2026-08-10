@@ -1,20 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Trash2, Plus, CheckCircle, Loader } from 'lucide-react';
+import { Trash2, Plus, CheckCircle, Loader, UserCheck, Search } from 'lucide-react';
 import { vendasCommands } from '../api/commands/vendas.commands';
-import { clientesQueries } from '../api/queries/clientes.queries';
 import { produtosQueries } from '../api/queries/produtos.queries';
 import { Popup } from '../components/Popup';
+import { ClienteModal } from '../components/ClienteModal';
 import type { ClienteDto, ProdutoDto, ItemVenda } from '../types';
 
 export const NovaVenda = () => {
-  const [clientes, setClientes] = useState<ClienteDto[]>([]);
   const [produtos, setProdutos] = useState<ProdutoDto[]>([]);
   const [itens, setItens] = useState<ItemVenda[]>([]);
   const [subtotalGeral, setSubtotalGeral] = useState<number>(0);
   const [valorComissaoEstimada, setValorComissaoEstimada] = useState<number>(0);
   
   // Estados de formulário
-  const [clienteSelecionado, setClienteSelecionado] = useState<number | ''>('');
+  const [clienteSelecionado, setClienteSelecionado] = useState<ClienteDto | null>(null);
+  const [modalClienteOpen, setModalClienteOpen] = useState<boolean>(false);
   const [prazoPagamento, setPrazoPagamento] = useState<number>(0);
   const [possuiNotaFiscal, setPossuiNotaFiscal] = useState<boolean>(true);
 
@@ -34,11 +34,7 @@ export const NovaVenda = () => {
   useEffect(() => {
     const carregarDados = async () => {
       try {
-        const [c, p] = await Promise.all([
-          clientesQueries.obterTodos(),
-          produtosQueries.obterTodos()
-        ]);
-        setClientes(c);
+        const p = await produtosQueries.obterTodos();
         setProdutos(p);
       } catch (error) {
         console.error('Erro ao carregar dados para a venda:', error);
@@ -108,7 +104,7 @@ export const NovaVenda = () => {
     setSalvando(true);
     try {
       await vendasCommands.criarVenda({
-        clienteId: Number(clienteSelecionado),
+        clienteId: clienteSelecionado.id,
         prazoPagamentoDias: prazoPagamento,
         possuiNotaFiscal: possuiNotaFiscal,
         produtos: itens.map(i => ({
@@ -120,7 +116,7 @@ export const NovaVenda = () => {
       
       showPopup('success', 'Venda finalizada com sucesso!');
       setItens([]);
-      setClienteSelecionado('');
+      setClienteSelecionado(null);
       setPrazoPagamento(0);
     } catch (error: any) {
       console.error('Erro ao finalizar venda:', error);
@@ -175,183 +171,208 @@ export const NovaVenda = () => {
         onClose={() => setPopup(null)}
       />
 
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* Área 1 - Cabeçalho */}
-      <div className="card p-6">
-        <h2 className="text-lg font-semibold mb-4 text-slate-800 border-b border-slate-100 pb-2">Dados da Venda</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1">Cliente</label>
-            <select 
-              className="input-field"
-              value={clienteSelecionado}
-              onChange={(e) => setClienteSelecionado(e.target.value ? Number(e.target.value) : '')}
-            >
-              <option value="">Selecione um cliente...</option>
-              {clientes.map(c => (
-                <option key={c.id} value={c.id}>{c.razaoSocial} ({c.cnpj})</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1">Prazo de Pagamento</label>
-            <select 
-              className="input-field"
-              value={prazoPagamento}
-              onChange={(e) => setPrazoPagamento(Number(e.target.value))}
-            >
-              <option value="0">À Vista</option>
-              <option value="15">15 Dias</option>
-              <option value="30">30 Dias</option>
-              <option value="60">60 Dias</option>
-            </select>
-          </div>
-          <div className="flex items-center pt-6">
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input 
-                type="checkbox" 
-                className="sr-only peer" 
-                checked={possuiNotaFiscal}
-                onChange={(e) => setPossuiNotaFiscal(e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-400/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-400"></div>
-              <span className="ml-3 text-sm font-medium text-slate-700">Emitir Nota Fiscal</span>
-            </label>
-          </div>
-        </div>
-      </div>
+      <ClienteModal
+        show={modalClienteOpen}
+        onClose={() => setModalClienteOpen(false)}
+        SelectClient={true}
+        onSelectClient={(cliente) => setClienteSelecionado(cliente)}
+        clienteSelecionadoId={clienteSelecionado?.id}
+      />
 
-      {/* Área 2 - Adicionar Produtos */}
-      <div className="card p-6 border-l-4 border-l-yellow-400">
-        <h2 className="text-lg font-semibold mb-4 text-slate-800">Adicionar Item</h2>
-        <div className="flex flex-col md:flex-row gap-4 items-end">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-slate-600 mb-1">Produto</label>
-            <select 
-              className="input-field"
-              value={produtoSelecionadoId}
-              onChange={(e) => handleProdutoChange(e.target.value ? Number(e.target.value) : '')}
-            >
-              <option value="">Selecione um produto...</option>
-              {produtos.map(p => (
-                <option key={p.id} value={p.id}>{p.nome} (R$ {p.precoMinimo} - R$ {p.precoMaximo})</option>
-              ))}
-            </select>
-          </div>
-          <div className="w-32">
-            <label className="block text-sm font-medium text-slate-600 mb-1">Qtd.</label>
-            <input 
-              type="number" 
-              className="input-field" 
-              min="1" 
-              value={quantidadeAtual}
-              onChange={(e) => setQuantidadeAtual(Number(e.target.value))}
-            />
-          </div>
-          <div className="w-40">
-            <label className="block text-sm font-medium text-slate-600 mb-1">Valor Unit. (R$)</label>
-            <input 
-              type="number" 
-              className="input-field" 
-              step="0.01"
-              value={precoAtual}
-              onChange={(e) => setPrecoAtual(Number(e.target.value))}
-            />
-          </div>
-          <button 
-            type="button"
-            onClick={adicionarItem}
-            className="btn-primary flex items-center whitespace-nowrap"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Adicionar Item
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Área 3 - Lista de Itens */}
-        <div className="lg:col-span-3">
-          <div className="table-container">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Produto</th>
-                  <th>Qtd.</th>
-                  <th>Valor Unit.</th>
-                  <th>Subtotal</th>
-                  <th className="w-16">Ação</th>
-                </tr>
-              </thead>
-              <tbody>
-                {itens.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="text-center py-8 text-slate-400">Nenhum item adicionado à venda.</td>
-                  </tr>
-                ) : (
-                  itens.map((item) => (
-                    <tr key={item.id}>
-                      <td className="font-medium text-slate-800">{item.nomeProduto}</td>
-                      <td className="text-slate-600">{item.quantidade}</td>
-                      <td className="text-slate-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.precoUnitario)}</td>
-                      <td className="font-semibold text-slate-800">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantidade * item.precoUnitario)}</td>
-                      <td>
-                        <button 
-                          onClick={() => removerItem(item.id)}
-                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Remover item"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Área 4 - Resumo e Finalização */}
-        <div className="lg:col-span-1">
-          <div className="card p-6 sticky top-6">
-            <h3 className="text-lg font-semibold mb-4 border-b border-slate-100 pb-2 text-slate-800">Resumo</h3>
-            
-            <div className="space-y-4 mb-8">
-              <div className="flex justify-between items-center text-slate-500">
-                <span>Total de Itens</span>
-                <span className="font-medium text-slate-800">{itens.reduce((acc, i) => acc + i.quantidade, 0)}</span>
-              </div>
-              <div className="flex justify-between items-center text-slate-500">
-                <span>Subtotal Geral</span>
-                <span className="font-medium text-slate-800">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(subtotalGeral)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center pt-4 border-t border-slate-100">
-                <span className="font-medium text-yellow-600">Comissão Estimada</span>
-                <span className="text-xl font-bold text-yellow-600">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorComissaoEstimada)}
-                </span>
-              </div>
-            </div>
-
-            <button 
-              onClick={finalizarVenda}
-              disabled={itens.length === 0 || salvando}
-              className="btn-primary w-full py-3 text-lg flex items-center justify-center gap-2"
-            >
-              {salvando ? (
-                <Loader className="w-5 h-5 animate-spin" />
+      <div className="max-w-5xl mx-auto space-y-6">
+        {/* Área 1 - Cabeçalho */}
+        <div className="card p-6">
+          <h2 className="text-lg font-semibold mb-4 text-slate-800 border-b border-slate-100 pb-2">Dados da Venda</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+            <div>
+              <label className="block text-sm font-medium text-slate-600 mb-1">Cliente</label>
+              {clienteSelecionado ? (
+                <div className="flex items-center justify-between p-3 bg-yellow-50/70 border border-yellow-200 rounded-lg">
+                  <div className="flex items-center space-x-2 truncate mr-2">
+                    <UserCheck className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+                    <div className="truncate">
+                      <p className="font-semibold text-sm text-slate-800 truncate">{clienteSelecionado.razaoSocial}</p>
+                      <p className="text-xs text-slate-500 font-mono">CNPJ: {clienteSelecionado.cnpj}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setModalClienteOpen(true)}
+                    className="btn-secondary py-1 px-3 text-xs flex-shrink-0"
+                  >
+                    Alterar
+                  </button>
+                </div>
               ) : (
-                <CheckCircle className="w-5 h-5" />
+                <button
+                  type="button"
+                  onClick={() => setModalClienteOpen(true)}
+                  className="btn-primary w-full flex items-center justify-center gap-2 py-2.5"
+                >
+                  <Search className="w-4 h-4" />
+                  Selecionar Cliente
+                </button>
               )}
-              {salvando ? 'Processando...' : 'Finalizar Venda'}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-600 mb-1">Prazo de Pagamento</label>
+              <select 
+                className="input-field"
+                value={prazoPagamento}
+                onChange={(e) => setPrazoPagamento(Number(e.target.value))}
+              >
+                <option value="0">À Vista</option>
+                <option value="15">15 Dias</option>
+                <option value="30">30 Dias</option>
+                <option value="60">60 Dias</option>
+              </select>
+            </div>
+            <div className="flex items-center pt-6">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={possuiNotaFiscal}
+                  onChange={(e) => setPossuiNotaFiscal(e.target.checked)}
+                />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-400/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-400"></div>
+                <span className="ml-3 text-sm font-medium text-slate-700">Emitir Nota Fiscal</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Área 2 - Adicionar Produtos */}
+        <div className="card p-6 border-l-4 border-l-yellow-400">
+          <h2 className="text-lg font-semibold mb-4 text-slate-800">Adicionar Item</h2>
+          <div className="flex flex-col md:flex-row gap-4 items-end">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-slate-600 mb-1">Produto</label>
+              <select 
+                className="input-field"
+                value={produtoSelecionadoId}
+                onChange={(e) => handleProdutoChange(e.target.value ? Number(e.target.value) : '')}
+              >
+                <option value="">Selecione um produto...</option>
+                {produtos.map(p => (
+                  <option key={p.id} value={p.id}>{p.nome} (R$ {p.precoMinimo} - R$ {p.precoMaximo})</option>
+                ))}
+              </select>
+            </div>
+            <div className="w-32">
+              <label className="block text-sm font-medium text-slate-600 mb-1">Qtd.</label>
+              <input 
+                type="number" 
+                className="input-field" 
+                min="1" 
+                value={quantidadeAtual}
+                onChange={(e) => setQuantidadeAtual(Number(e.target.value))}
+              />
+            </div>
+            <div className="w-40">
+              <label className="block text-sm font-medium text-slate-600 mb-1">Valor Unit. (R$)</label>
+              <input 
+                type="number" 
+                className="input-field" 
+                step="0.01"
+                value={precoAtual}
+                onChange={(e) => setPrecoAtual(Number(e.target.value))}
+              />
+            </div>
+            <button 
+              type="button"
+              onClick={adicionarItem}
+              className="btn-primary flex items-center whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Adicionar Item
             </button>
           </div>
         </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Área 3 - Lista de Itens */}
+          <div className="lg:col-span-3">
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Produto</th>
+                    <th>Qtd.</th>
+                    <th>Valor Unit.</th>
+                    <th>Subtotal</th>
+                    <th className="w-16">Ação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {itens.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="text-center py-8 text-slate-400">Nenhum item adicionado à venda.</td>
+                    </tr>
+                  ) : (
+                    itens.map((item) => (
+                      <tr key={item.id}>
+                        <td className="font-medium text-slate-800">{item.nomeProduto}</td>
+                        <td className="text-slate-600">{item.quantidade}</td>
+                        <td className="text-slate-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.precoUnitario)}</td>
+                        <td className="font-semibold text-slate-800">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantidade * item.precoUnitario)}</td>
+                        <td>
+                          <button 
+                            onClick={() => removerItem(item.id)}
+                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Remover item"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Área 4 - Resumo e Finalização */}
+          <div className="lg:col-span-1">
+            <div className="card p-6 sticky top-6">
+              <h3 className="text-lg font-semibold mb-4 border-b border-slate-100 pb-2 text-slate-800">Resumo</h3>
+              
+              <div className="space-y-4 mb-8">
+                <div className="flex justify-between items-center text-slate-500">
+                  <span>Total de Itens</span>
+                  <span className="font-medium text-slate-800">{itens.reduce((acc, i) => acc + i.quantidade, 0)}</span>
+                </div>
+                <div className="flex justify-between items-center text-slate-500">
+                  <span>Subtotal Geral</span>
+                  <span className="font-medium text-slate-800">
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(subtotalGeral)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center pt-4 border-t border-slate-100">
+                  <span className="font-medium text-yellow-600">Comissão Estimada</span>
+                  <span className="text-xl font-bold text-yellow-600">
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorComissaoEstimada)}
+                  </span>
+                </div>
+              </div>
+
+              <button 
+                onClick={finalizarVenda}
+                disabled={itens.length === 0 || salvando}
+                className="btn-primary w-full py-3 text-lg flex items-center justify-center gap-2"
+              >
+                {salvando ? (
+                  <Loader className="w-5 h-5 animate-spin" />
+                ) : (
+                  <CheckCircle className="w-5 h-5" />
+                )}
+                {salvando ? 'Processando...' : 'Finalizar Venda'}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
     </>
   );
 };
