@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Trophy, PieChart as PieChartIcon, AlertTriangle, Loader } from 'lucide-react';
+import { Trophy, PieChart as PieChartIcon, AlertTriangle, Loader, Users } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import { clientesQueries } from '../api/queries/clientes.queries';
+import { ClienteSearchSection } from '../components/ClienteSearchSection';
 import type { RankingClienteDto, ClienteInativoDto } from '../types';
 
 export const RelatorioClientes = () => {
@@ -70,7 +71,7 @@ export const RelatorioClientes = () => {
   if (carregandoListas) return <div className="p-8 text-slate-500 text-center animate-pulse">Carregando inteligência de clientes...</div>;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto space-y-0">
       {/* Painel 1 - Top Clientes */}
       <div className="card p-6 lg:col-span-1">
         <div className="flex items-center mb-6 border-b border-slate-100 pb-4">
@@ -151,7 +152,22 @@ export const RelatorioClientes = () => {
         </div>
       </div>
 
-      {/* Painel 3 - Clientes em Risco */}
+      {/* Painel 3 - Todos os Clientes e Filtros */}
+      <div className="card p-6 lg:col-span-3">
+        <div className="flex items-center mb-6 border-b border-slate-100 pb-4">
+          <div className="p-2 bg-yellow-100 rounded-lg text-yellow-600 mr-3">
+            <Users className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-slate-800">Consulta de Clientes</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Filtre a lista completa de clientes cadastrados por Nome e CNPJ</p>
+          </div>
+        </div>
+
+        <ClienteSearchSection SelectClient={false} />
+      </div>
+
+      {/* Painel 4 - Clientes em Risco */}
       <div className="card p-6 lg:col-span-3">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 border-b border-slate-100 pb-4">
           <div className="flex items-center mb-4 md:mb-0">
