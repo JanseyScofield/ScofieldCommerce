@@ -3,26 +3,56 @@ import type { MetricasDashboard, VendaHistorico } from '../../types';
 
 export const vendasQueries = {
   obterMetricasDashboard: async (): Promise<MetricasDashboard> => {
+    let totalVendas = 0;
+    let totalProdutos = 0;
+    let totalComissao = 0;
+    let comissaoRecebida = 0;
+    let comissaoPendente = 0;
+
     try {
-      const { data } = await apiClient.get<any[]>('/relatorios/vendas/dia');
-      if (data && data.length > 0) {
+      const [resDia, resComissoes] = await Promise.allSettled([
+        apiClient.get<any[]>('/relatorios/vendas/dia'),
+        apiClient.get<any>('/vendas/comissoes/resumo')
+      ]);
+
+      if (resDia.status === 'fulfilled' && resDia.value.data && resDia.value.data.length > 0) {
         // Pega o dia mais recente (o SQL ordena por Dia DESC)
-        const maisRecente = data[0];
-        return {
-          totalVendas: Number(maisRecente.ValorVendido || 0),
-          totalProdutos: Number(maisRecente.QuantidadeProdutos || 0),
-          totalComissao: Number(maisRecente.Comissao || 0),
-        };
+        const maisRecente = resDia.value.data[0];
+        totalVendas = Number(maisRecente.valorVendido || maisRecente.ValorVendido || 0);
+        totalProdutos = Number(maisRecente.quantidadeProdutos || maisRecente.QuantidadeProdutos || 0);
+        totalComissao = Number(maisRecente.comissao || maisRecente.Comissao || 0);
+      }
+
+      if (resComissoes.status === 'fulfilled' && resComissoes.value.data) {
+        const c = resComissoes.value.data;
+        comissaoRecebida = Number(c.comissaoRecebida || c.ComissaoRecebida || 0);
+        comissaoPendente = Number(c.comissaoPendente || c.ComissaoPendente || 0);
       }
     } catch (error) {
       console.error('Erro ao buscar métricas do dashboard:', error);
     }
 
     return {
-      totalVendas: 0,
-      totalProdutos: 0,
-      totalComissao: 0
+      totalVendas,
+      totalProdutos,
+      totalComissao,
+      comissaoRecebida,
+      comissaoPendente
     };
+  },
+
+  obterResumoComissoes: async () => {
+    try {
+      const { data } = await apiClient.get<any>('/vendas/comissoes/resumo');
+      return {
+        comissaoRecebida: Number(data.comissaoRecebida || data.ComissaoRecebida || 0),
+        comissaoPendente: Number(data.comissaoPendente || data.ComissaoPendente || 0),
+        totalComissao: Number(data.totalComissao || data.TotalComissao || 0)
+      };
+    } catch (error) {
+      console.error('Erro ao obter resumo de comissões:', error);
+      return { comissaoRecebida: 0, comissaoPendente: 0, totalComissao: 0 };
+    }
   },
 
   obterEvolucaoDiariaVendas: async () => {
@@ -59,12 +89,13 @@ export const vendasQueries = {
     }
   },
 
-  obterHistoricoVendas: async (produtoId?: string, dataFiltro?: string, clienteId?: string): Promise<VendaHistorico[]> => {
+  obterHistoricoVendas: async (produtoId?: string, dataFiltro?: string, clienteId?: string, comissaoRecebida?: boolean): Promise<VendaHistorico[]> => {
     try {
       const params: any = {};
       if (produtoId) params.produtoId = Number(produtoId);
       if (dataFiltro) params.data = dataFiltro;
       if (clienteId) params.clienteId = Number(clienteId);
+      if (comissaoRecebida !== undefined) params.comissaoRecebida = comissaoRecebida;
 
       const { data } = await apiClient.get<any[]>('/vendas', { params });
       return data.map(v => ({
@@ -72,6 +103,7 @@ export const vendasQueries = {
         dataVenda: v.dataVenda || v.DataVenda,
         valorTotal: Number(v.valorTotal || v.ValorTotal || 0),
         comissaoTotal: Number(v.comissaoTotal || v.ComissaoTotal || 0),
+        comissaoRecebida: Boolean(v.comissaoRecebida ?? v.ComissaoRecebida ?? false),
         prazoPagamentoDias: Number(v.prazoPagamentoDias || v.PrazoPagamentoDias || 0),
         possuiNotaFiscal: Boolean(v.possuiNotaFiscal ?? v.PossuiNotaFiscal ?? false),
         razaoSocial: v.razaoSocial || v.RazaoSocial || 'Cliente Desconhecido',

@@ -24,6 +24,23 @@ namespace ScofieldCommerce.Infrastructure.Repositories
             await _context.Vendas.AddAsync(venda);
         }
 
+        public async Task<Venda?> ObterPorIdAsync(long id)
+        {
+            return await _context.Vendas.FirstOrDefaultAsync(v => v.Id == id);
+        }
+
+        public async Task<dynamic> ObterResumoComissoesAsync()
+        {
+            var connection = _context.Database.GetDbConnection();
+            var sql = @"
+                SELECT 
+                    COALESCE(SUM(CASE WHEN ""ComissaoRecebida"" = true THEN ""ComissaoTotal"" ELSE 0 END), 0) as ""ComissaoRecebida"",
+                    COALESCE(SUM(CASE WHEN ""ComissaoRecebida"" = false THEN ""ComissaoTotal"" ELSE 0 END), 0) as ""ComissaoPendente"",
+                    COALESCE(SUM(""ComissaoTotal""), 0) as ""TotalComissao""
+                FROM ""Vendas"";";
+            return await connection.QueryFirstOrDefaultAsync(sql);
+        }
+
         public async Task<decimal> ObterTotalVendasGlobalAsync()
         {
             var connection = _context.Database.GetDbConnection();
@@ -31,7 +48,7 @@ namespace ScofieldCommerce.Infrastructure.Repositories
             return await connection.ExecuteScalarAsync<decimal>(sql);
         }
 
-        public async Task<IEnumerable<dynamic>> ObterVendasFiltrosAsync(long? produtoId, DateTime? data, long? clienteId)
+        public async Task<IEnumerable<dynamic>> ObterVendasFiltrosAsync(long? produtoId, DateTime? data, long? clienteId, bool? comissaoRecebida = null)
         {
             var connection = _context.Database.GetDbConnection();
             var sql = @"
@@ -40,6 +57,7 @@ namespace ScofieldCommerce.Infrastructure.Repositories
                     v.""DataVenda"",
                     v.""ValorTotal"",
                     v.""ComissaoTotal"",
+                    v.""ComissaoRecebida"",
                     v.""PrazoPagamentoDias"",
                     v.""PossuiNotaFiscal"",
                     c.""RazaoSocial"",
@@ -53,9 +71,10 @@ namespace ScofieldCommerce.Infrastructure.Repositories
                 " + (produtoId.HasValue ? @" AND v.""Id"" IN (SELECT ""VendaId"" FROM ""ProdutosVendidos"" WHERE ""ProdutoId"" = @ProdutoId) " : "") + @"
                 " + (data.HasValue ? @" AND DATE(v.""DataVenda"") = DATE(@Data) " : "") + @"
                 " + (clienteId.HasValue ? @" AND v.""ClienteId"" = @ClienteId " : "") + @"
+                " + (comissaoRecebida.HasValue ? @" AND v.""ComissaoRecebida"" = @ComissaoRecebida " : "") + @"
                 ORDER BY v.""DataVenda"" DESC;";
             
-            return await connection.QueryAsync(sql, new { ProdutoId = produtoId, Data = data, ClienteId = clienteId });
+            return await connection.QueryAsync(sql, new { ProdutoId = produtoId, Data = data, ClienteId = clienteId, ComissaoRecebida = comissaoRecebida });
         }
 
         public async Task<IEnumerable<dynamic>> RelatorioVendasDiaAsync()

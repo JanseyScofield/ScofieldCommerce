@@ -33,5 +33,10 @@ export const vendasCommands = {
       valorTotal: data.valorTotal ?? data.ValorTotal ?? 0,
       comissaoTotal: data.comissaoTotal ?? data.ComissaoTotal ?? 0
     };
+  },
+
+  darBaixaComissao: async (vendaId: number): Promise<{ mensagem: string }> => {
+    const { data } = await apiClient.put(`/vendas/${vendaId}/comissao-recebida`);
+    return data;
   }
 };

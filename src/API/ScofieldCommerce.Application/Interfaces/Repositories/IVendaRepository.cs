@@ -8,7 +8,9 @@ namespace ScofieldCommerce.Application.Interfaces.Repositories
     public interface IVendaRepository
     {
         Task AdicionarAsync(Venda venda);
-        Task<IEnumerable<dynamic>> ObterVendasFiltrosAsync(long? produtoId, DateTime? data, long? clienteId);
+        Task<Venda?> ObterPorIdAsync(long id);
+        Task<dynamic> ObterResumoComissoesAsync();
+        Task<IEnumerable<dynamic>> ObterVendasFiltrosAsync(long? produtoId, DateTime? data, long? clienteId, bool? comissaoRecebida = null);
         Task<IEnumerable<dynamic>> RelatorioVendasDiaAsync();
         Task<IEnumerable<dynamic>> RelatorioVendasMesAsync();
         Task<IEnumerable<dynamic>> RelatorioVendasClienteAsync();

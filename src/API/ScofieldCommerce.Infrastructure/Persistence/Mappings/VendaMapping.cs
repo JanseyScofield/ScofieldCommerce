@@ -14,6 +14,7 @@ namespace ScofieldCommerce.Infrastructure.Persistence.Mappings
 
             builder.Property(v => v.ValorTotal).IsRequired().HasColumnType("numeric(18,2)");
             builder.Property(v => v.ComissaoTotal).IsRequired().HasColumnType("numeric(18,2)");
+            builder.Property(v => v.ComissaoRecebida).IsRequired().HasDefaultValue(false);
             builder.Property(v => v.DataVenda).IsRequired();
 
             builder.HasOne(v => v.Cliente)

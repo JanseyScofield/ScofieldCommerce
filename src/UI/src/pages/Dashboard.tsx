@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { DollarSign, Package, TrendingUp } from 'lucide-react';
+import { DollarSign, Package, TrendingUp, CheckCircle2, Clock } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { vendasQueries } from '../api/queries/vendas.queries';
 import type { MetricasDashboard } from '../types';
@@ -35,37 +35,61 @@ export const Dashboard = () => {
   return (
     <div className="space-y-6">
       {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card p-6 flex items-center">
-          <div className="p-4 bg-yellow-100 rounded-xl text-yellow-600 mr-4">
-            <DollarSign className="w-8 h-8" />
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-3.5">
+        <div className="card p-3 sm:p-3.5 flex items-center shadow-sm">
+          <div className="p-2 sm:p-2.5 bg-yellow-100 rounded-xl text-yellow-600 mr-2.5 sm:mr-3 shrink-0">
+            <DollarSign className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-slate-500 text-sm font-medium">Valor Total Vendido (Hoje)</p>
-            <p className="text-3xl font-bold text-yellow-600 mt-1">
+          <div className="min-w-0 flex-1">
+            <p className="text-slate-500 text-[11px] font-semibold uppercase tracking-tight whitespace-nowrap">Valor Vendido (Hoje)</p>
+            <p className="text-lg xl:text-xl font-bold text-yellow-600 mt-0.5 whitespace-nowrap">
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metricas?.totalVendas || 0)}
             </p>
           </div>
         </div>
 
-        <div className="card p-6 flex items-center">
-          <div className="p-4 bg-yellow-100 rounded-xl text-yellow-600 mr-4">
-            <Package className="w-8 h-8" />
+        <div className="card p-3 sm:p-3.5 flex items-center shadow-sm">
+          <div className="p-2 sm:p-2.5 bg-yellow-100 rounded-xl text-yellow-600 mr-2.5 sm:mr-3 shrink-0">
+            <Package className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-slate-500 text-sm font-medium">Qtd. Produtos Vendidos</p>
-            <p className="text-3xl font-bold text-yellow-600 mt-1">{metricas?.totalProdutos || 0}</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-slate-500 text-[11px] font-semibold uppercase tracking-tight whitespace-nowrap">Qtd. Produtos</p>
+            <p className="text-lg xl:text-xl font-bold text-yellow-600 mt-0.5 whitespace-nowrap">{metricas?.totalProdutos || 0}</p>
           </div>
         </div>
 
-        <div className="card p-6 flex items-center">
-          <div className="p-4 bg-yellow-100 rounded-xl text-yellow-600 mr-4">
-            <TrendingUp className="w-8 h-8" />
+        <div className="card p-3 sm:p-3.5 flex items-center shadow-sm">
+          <div className="p-2 sm:p-2.5 bg-yellow-100 rounded-xl text-yellow-600 mr-2.5 sm:mr-3 shrink-0">
+            <TrendingUp className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-slate-500 text-sm font-medium">Total de Comissão (Hoje)</p>
-            <p className="text-3xl font-bold text-yellow-600 mt-1">
+          <div className="min-w-0 flex-1">
+            <p className="text-slate-500 text-[11px] font-semibold uppercase tracking-tight whitespace-nowrap">Comissão (Hoje)</p>
+            <p className="text-lg xl:text-xl font-bold text-yellow-600 mt-0.5 whitespace-nowrap">
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metricas?.totalComissao || 0)}
+            </p>
+          </div>
+        </div>
+
+        <div className="card p-3 sm:p-3.5 flex items-center border-l-4 border-l-emerald-500 shadow-sm">
+          <div className="p-2 sm:p-2.5 bg-emerald-100 rounded-xl text-emerald-600 mr-2.5 sm:mr-3 shrink-0">
+            <CheckCircle2 className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-slate-500 text-[11px] font-semibold uppercase tracking-tight whitespace-nowrap">Comissão Recebida</p>
+            <p className="text-lg xl:text-xl font-bold text-emerald-600 mt-0.5 whitespace-nowrap">
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metricas?.comissaoRecebida || 0)}
+            </p>
+          </div>
+        </div>
+
+        <div className="card p-3 sm:p-3.5 flex items-center border-l-4 border-l-amber-500 shadow-sm col-span-2 sm:col-span-1">
+          <div className="p-2 sm:p-2.5 bg-amber-100 rounded-xl text-amber-600 mr-2.5 sm:mr-3 shrink-0">
+            <Clock className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-slate-500 text-[11px] font-semibold uppercase tracking-tight whitespace-nowrap">Comissão a Receber</p>
+            <p className="text-lg xl:text-xl font-bold text-amber-600 mt-0.5 whitespace-nowrap">
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metricas?.comissaoPendente || 0)}
             </p>
           </div>
         </div>

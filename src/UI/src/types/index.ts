@@ -36,6 +36,8 @@ export interface MetricasDashboard {
   totalVendas: number;
   totalProdutos: number;
   totalComissao: number;
+  comissaoRecebida: number;
+  comissaoPendente: number;
 }
 
 // --- View / Page Specific Types ---
@@ -45,6 +47,7 @@ export interface VendaHistorico {
   dataVenda: string;
   valorTotal: number;
   comissaoTotal: number;
+  comissaoRecebida: boolean;
   prazoPagamentoDias: number;
   possuiNotaFiscal: boolean;
   razaoSocial: string;

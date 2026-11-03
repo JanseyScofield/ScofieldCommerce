@@ -23,9 +23,9 @@ namespace ScofieldCommerce.API.Endpoints
                 return Results.Ok(new { Mensagem = "Venda registrada com sucesso." });
             });
             
-            group.MapGet("/", async ([FromQuery] long? produtoId, [FromQuery] System.DateTime? data, [FromQuery] long? clienteId, IVendaService service) =>
+            group.MapGet("/", async ([FromQuery] long? produtoId, [FromQuery] System.DateTime? data, [FromQuery] long? clienteId, [FromQuery] bool? comissaoRecebida, IVendaService service) =>
             {
-                var result = await service.ObterVendasFiltrosAsync(produtoId, data, clienteId);
+                var result = await service.ObterVendasFiltrosAsync(produtoId, data, clienteId, comissaoRecebida);
                 if (!result.IsSuccess)
                     return Results.BadRequest(new { Erro = result.ErrorMessage });
 
@@ -44,6 +44,24 @@ namespace ScofieldCommerce.API.Endpoints
             group.MapPost("/calcular", async ([FromBody] CalcularVendaDto dto, IVendaService service) =>
             {
                 var result = await service.CalcularVendaAsync(dto);
+                if (!result.IsSuccess)
+                    return Results.BadRequest(new { Erro = result.ErrorMessage });
+
+                return Results.Ok(result.Data);
+            });
+
+            group.MapPut("/{id:long}/comissao-recebida", async (long id, IVendaService service) =>
+            {
+                var result = await service.DarBaixaComissaoAsync(id);
+                if (!result.IsSuccess)
+                    return Results.BadRequest(new { Erro = result.ErrorMessage });
+
+                return Results.Ok(new { Mensagem = "Comissão baixada com sucesso." });
+            });
+
+            group.MapGet("/comissoes/resumo", async (IVendaService service) =>
+            {
+                var result = await service.ObterResumoComissoesAsync();
                 if (!result.IsSuccess)
                     return Results.BadRequest(new { Erro = result.ErrorMessage });
 

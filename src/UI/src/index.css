@@ -33,7 +33,7 @@
   }
   
   .table-container {
-    @apply w-full overflow-x-auto rounded-lg border border-slate-100 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.02)];
+    @apply w-full overflow-x-auto rounded-xl border border-slate-200/80 bg-white shadow-sm;
   }
   
   .data-table {
@@ -41,11 +41,11 @@
   }
   
   .data-table th {
-    @apply bg-slate-50 px-6 py-4 font-semibold text-slate-700 border-b border-slate-200;
+    @apply bg-slate-50 px-4 py-3.5 font-semibold text-slate-700 border-b border-slate-200 whitespace-nowrap text-xs tracking-wide;
   }
   
   .data-table td {
-    @apply px-6 py-4 border-b border-slate-100;
+    @apply px-4 py-3.5 border-b border-slate-100 align-middle;
   }
   
   .data-table tr:hover td {

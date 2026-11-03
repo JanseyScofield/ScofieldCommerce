@@ -110,5 +110,68 @@ namespace ScofieldCommerce.Tests.Application.Services
             result.Data!.ValorTotal.Should().Be(300.0m);
             result.Data!.ComissaoTotal.Should().Be(15.0m);
         }
+
+        [Fact]
+        public async Task DarBaixaComissaoAsync_ComVendaExistente_Deve_MarcarComissaoRecebidaEComitar()
+        {
+            // Arrange
+            var mockVendaRepo = new Mock<IVendaRepository>();
+            var mockUow = new Mock<IUnitOfWork>();
+
+            var venda = Venda.Criar(1, 30, true, DateTime.UtcNow).Data!;
+            mockVendaRepo.Setup(r => r.ObterPorIdAsync(1L)).ReturnsAsync(venda);
+
+            var service = new VendaService(mockVendaRepo.Object, null!, null!, mockUow.Object, null!);
+
+            // Act
+            var result = await service.DarBaixaComissaoAsync(1L);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            venda.ComissaoRecebida.Should().BeTrue();
+            mockUow.Verify(u => u.CommitAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task DarBaixaComissaoAsync_ComVendaJaBaixada_Deve_RetornarErro()
+        {
+            // Arrange
+            var mockVendaRepo = new Mock<IVendaRepository>();
+            var mockUow = new Mock<IUnitOfWork>();
+
+            var venda = Venda.Criar(1, 30, true, DateTime.UtcNow).Data!;
+            venda.MarcarComissaoComoRecebida();
+            mockVendaRepo.Setup(r => r.ObterPorIdAsync(1L)).ReturnsAsync(venda);
+
+            var service = new VendaService(mockVendaRepo.Object, null!, null!, mockUow.Object, null!);
+
+            // Act
+            var result = await service.DarBaixaComissaoAsync(1L);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("já foi registrada como recebida");
+            mockUow.Verify(u => u.CommitAsync(), Times.Never);
+        }
+
+        [Fact]
+        public async Task DarBaixaComissaoAsync_ComVendaInexistente_Deve_RetornarErro()
+        {
+            // Arrange
+            var mockVendaRepo = new Mock<IVendaRepository>();
+            var mockUow = new Mock<IUnitOfWork>();
+
+            mockVendaRepo.Setup(r => r.ObterPorIdAsync(999L)).ReturnsAsync((Venda?)null);
+
+            var service = new VendaService(mockVendaRepo.Object, null!, null!, mockUow.Object, null!);
+
+            // Act
+            var result = await service.DarBaixaComissaoAsync(999L);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Be("Venda não encontrada.");
+            mockUow.Verify(u => u.CommitAsync(), Times.Never);
+        }
     }
 }

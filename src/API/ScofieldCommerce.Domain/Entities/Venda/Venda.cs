@@ -11,6 +11,7 @@ namespace ScofieldCommerce.Domain.Entities.Venda
         public bool PossuiNotaFiscal { get; private set; }
         public decimal ValorTotal { get; private set; }
         public decimal ComissaoTotal { get; private set; }
+        public bool ComissaoRecebida { get; private set; }
         public DateTime DataVenda { get; private set; }
 
         public Cliente Cliente { get; private set; } = null!;
@@ -19,12 +20,13 @@ namespace ScofieldCommerce.Domain.Entities.Venda
         public IReadOnlyCollection<ProdutoVendido> ProdutosVendidos => _produtosVendidos.AsReadOnly();
         protected Venda() { }
 
-        private Venda(long clienteId, sbyte prazoPagamentoDias, bool possuiNotaFiscal, DateTime dataVenda)
+        private Venda(long clienteId, sbyte prazoPagamentoDias, bool possuiNotaFiscal, DateTime dataVenda, bool comissaoRecebida = false)
         {
             ClienteId = clienteId;
             PrazoPagamentoDias = prazoPagamentoDias;
             PossuiNotaFiscal = possuiNotaFiscal;
             DataVenda = dataVenda;
+            ComissaoRecebida = comissaoRecebida;
         }
 
         public static Result<Venda> Criar(long clienteId, sbyte prazoPagamentoDias, bool possuiNotaFiscal, DateTime dataVenda)
@@ -32,7 +34,7 @@ namespace ScofieldCommerce.Domain.Entities.Venda
             var validacao = Validar(clienteId, prazoPagamentoDias, dataVenda);
             if (!validacao.IsSuccess) return Result<Venda>.Error(validacao.ErrorMessage!);
 
-            return Result<Venda>.Ok(new Venda(clienteId, prazoPagamentoDias, possuiNotaFiscal, dataVenda));
+            return Result<Venda>.Ok(new Venda(clienteId, prazoPagamentoDias, possuiNotaFiscal, dataVenda, false));
         }
 
         public Result<bool> Atualizar(long clienteId, sbyte prazoPagamentoDias, bool possuiNotaFiscal, DateTime dataVenda)
@@ -45,6 +47,15 @@ namespace ScofieldCommerce.Domain.Entities.Venda
             PossuiNotaFiscal = possuiNotaFiscal;
             DataVenda = dataVenda;
 
+            return Result<bool>.Ok(true);
+        }
+
+        public Result<bool> MarcarComissaoComoRecebida()
+        {
+            if (ComissaoRecebida)
+                return Result<bool>.Error("A comissão desta venda já foi registrada como recebida.");
+
+            ComissaoRecebida = true;
             return Result<bool>.Ok(true);
         }
 
@@ -71,11 +82,9 @@ namespace ScofieldCommerce.Domain.Entities.Venda
             return Result<bool>.Ok(true);
         }
 
-
-
         public override string ToString()
         {
-            return $"Venda [Id={Id}, Cliente Id={ClienteId}, Prazo Pagamento Dias={PrazoPagamentoDias}, Possui Nota Fiscal={PossuiNotaFiscal}, Valor Total={ValorTotal}, Comissão Total={ComissaoTotal}, Data Venda={DataVenda}]";
+            return $"Venda [Id={Id}, Cliente Id={ClienteId}, Prazo Pagamento Dias={PrazoPagamentoDias}, Possui Nota Fiscal={PossuiNotaFiscal}, Valor Total={ValorTotal}, Comissão Total={ComissaoTotal}, Comissão Recebida={ComissaoRecebida}, Data Venda={DataVenda}]";
         }
 
         public override bool Equals(object? obj)
@@ -88,12 +97,13 @@ namespace ScofieldCommerce.Domain.Entities.Venda
                    PossuiNotaFiscal == other.PossuiNotaFiscal &&
                    ValorTotal == other.ValorTotal &&
                    ComissaoTotal == other.ComissaoTotal &&
+                   ComissaoRecebida == other.ComissaoRecebida &&
                    DataVenda == other.DataVenda;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(ClienteId, PrazoPagamentoDias, PossuiNotaFiscal, ValorTotal, ComissaoTotal, DataVenda);
+            return HashCode.Combine(ClienteId, PrazoPagamentoDias, PossuiNotaFiscal, ValorTotal, ComissaoTotal, ComissaoRecebida, DataVenda);
         }
     }
 }

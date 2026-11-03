@@ -124,11 +124,11 @@ namespace ScofieldCommerce.Application.Services
             }
         }
 
-        public async Task<Result<IEnumerable<dynamic>>> ObterVendasFiltrosAsync(long? produtoId, DateTime? data, long? clienteId)
+        public async Task<Result<IEnumerable<dynamic>>> ObterVendasFiltrosAsync(long? produtoId, DateTime? data, long? clienteId, bool? comissaoRecebida = null)
         {
             try
             {
-                var rows = await _vendaRepository.ObterVendasFiltrosAsync(produtoId, data, clienteId);
+                var rows = await _vendaRepository.ObterVendasFiltrosAsync(produtoId, data, clienteId, comissaoRecebida);
 
                 var vendas = rows.GroupBy(r => (long)r.Id)
                     .Select(g => {
@@ -147,6 +147,7 @@ namespace ScofieldCommerce.Application.Services
                             DataVenda = (DateTime)first.DataVenda,
                             ValorTotal = (decimal)first.ValorTotal,
                             ComissaoTotal = (decimal)first.ComissaoTotal,
+                            ComissaoRecebida = (bool)(first.ComissaoRecebida ?? false),
                             PrazoPagamentoDias = (sbyte)first.PrazoPagamentoDias,
                             PossuiNotaFiscal = (bool)first.PossuiNotaFiscal,
                             RazaoSocial = (string)first.RazaoSocial,
@@ -161,6 +162,40 @@ namespace ScofieldCommerce.Application.Services
             catch (Exception ex)
             {
                 return Result<IEnumerable<dynamic>>.Error($"Erro ao obter histórico de vendas: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<bool>> DarBaixaComissaoAsync(long vendaId)
+        {
+            try
+            {
+                var venda = await _vendaRepository.ObterPorIdAsync(vendaId);
+                if (venda == null)
+                    return Result<bool>.Error("Venda não encontrada.");
+
+                var marcarResult = venda.MarcarComissaoComoRecebida();
+                if (!marcarResult.IsSuccess)
+                    return Result<bool>.Error(marcarResult.ErrorMessage!);
+
+                await _uow.CommitAsync();
+                return Result<bool>.Ok(true);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Error($"Erro ao dar baixa na comissão: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<dynamic>> ObterResumoComissoesAsync()
+        {
+            try
+            {
+                var resumo = await _vendaRepository.ObterResumoComissoesAsync();
+                return Result<dynamic>.Ok(resumo);
+            }
+            catch (Exception ex)
+            {
+                return Result<dynamic>.Error($"Erro ao obter resumo de comissões: {ex.Message}");
             }
         }
     }
