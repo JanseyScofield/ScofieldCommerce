@@ -19,7 +19,7 @@ export const Layout = () => {
       <aside className="w-64 bg-white border-r border-slate-200 flex flex-col">
         <div className="h-20 flex flex-col justify-center px-6 border-b border-slate-200">
           <img src="/logo.svg" alt="Scofield Commerce" className="h-15 w-auto self-start" />
-          <span className="text-[10px] text-right text-slate-400 font-semibold mt-0.5">V1.1</span>
+          <span className="text-[10px] text-right text-slate-400 font-semibold mt-0.5">V1.2</span>
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-2">

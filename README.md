@@ -152,3 +152,37 @@ A **Versão 1.1** introduziu uma experiência renovada para a busca e seleção 
 * **Painel de Busca Completa**: Adicionada uma nova área na tela de *Relatório de Clientes* dedicada à consulta e filtragem da base de clientes.
 * **Pesquisa Combinada**: Permite pesquisar e filtrar todos os clientes cadastrados por Nome ou CNPJ em uma visualização limpa e organizada.
 * **Preservação das Ferramentas**: Todas as métricas e relatórios estratégicos já existentes (*Top Clientes*, *Preferência de Compra* e *Clientes em Risco*) foram mantidos intactos na mesma tela.
+
+---
+
+### 🚀 Versão 1.2 - Gestão de Comissões e Aprimoramentos no Dashboard 🌟
+
+A **Versão 1.2** introduziu o controle completo do ciclo de recebimento de comissões sobre as vendas, permitindo aos vendedores e gestores acompanhar quais comissões já foram pagas/recebidas e quais ainda estão pendentes, registrar a baixa individual e visualizar os saldos consolidados no Dashboard.
+
+#### 💰 1. Controle de Comissão Recebida
+* **Rastreabilidade por Venda**: Cada venda agora possui a propriedade de controle `ComissaoRecebida`, que é inicializada por padrão como pendente (`false`).
+* **Regra de Negócio e Domínio**: Encapsulamento da lógica de baixa com o método `MarcarComissaoComoRecebida()` na entidade `Venda`, garantindo validações de estado e integridade.
+* **Endpoint de Baixa na Comissão**: Nova rota REST `PUT /vendas/{id}/comissao-recebida` com validação de existência, idempotência e tratamento via Result Pattern.
+* **Resumo Financeiro de Comissões**: Endpoint dedicado `GET /vendas/comissoes/resumo` para obtenção consolidada dos totais de comissões recebidas e pendentes diretamente da base de dados.
+* **Cobertura de Testes**: Implementação de testes de unidade automatizados (xUnit, Moq e FluentAssertions) para os cenários de sucesso, venda inexistente e venda com baixa já realizada.
+
+#### 📜 2. Histórico de Vendas com Gestão e Baixa de Comissões
+* **Status Visual da Comissão**: Identificação imediata da situação da comissão em cada venda através de *badges* visuais estilizados:
+  * **"Recebida"** (badge verde esmeralda): Comissão já repassada/baixada.
+  * **"Pendente"** (badge âmbar): Comissão aguardando recebimento.
+* **Ação de "Dar Baixa" com Confirmação Segura**:
+  * Botão de ação direta na linha da venda para registrar o recebimento da comissão.
+  * Integração com o componente de **modal/pop-up personalizado** do projeto para confirmação do usuário antes de efetivar a baixa.
+  * Desativação automática do botão (`disabled`) quando o status já for de "Recebida", prevenindo chamadas redundantes.
+* **Filtro Dinâmico por Status de Comissão**:
+  * Adicionado novo seletor de filtro no topo da tabela (**"Todas"**, **"Recebidas"** e **"Pendentes"**).
+  * Filtragem executada no back-end de forma sob demanda, disparada ao clicar no botão **"Filtrar"** em conjunto com os demais filtros (Produto, Cliente e Data).
+* **Responsividade Aprimorada**: Layout da tabela otimizado com rolagem horizontal e largura mínima garantida, assegurando visualização nítida em qualquer tamanho de tela.
+
+#### 📊 3. Novos Indicadores e Redesign de KPIs no Dashboard
+* **Novos Indicadores Financeiros**:
+  * **Comissão Recebida (Total)**: Somatório de todas as comissões de vendas já baixadas (`ComissaoRecebida = true`), com destaque visual em verde esmeralda e tag identificadora `Baixada`.
+  * **Comissão a Receber (Pendente)**: Saldo total de comissões que ainda estão pendentes de recebimento (`ComissaoRecebida = false`), com destaque visual em âmbar e tag identificadora `Pendente`.
+* **Design Otimizado para Resolução Nativa (100% de Zoom)**:
+  * Reestruturação das proporções, tipografia e espaçamentos internos para garantir exibição completa e harmoniosa de todos os 5 cards de KPI em linha única.
+  * Remoção do truncamento com reticências (`...`), exibindo valores monetários integrais com clareza em qualquer resolução.
