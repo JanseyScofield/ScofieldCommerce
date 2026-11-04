@@ -9,7 +9,7 @@ namespace ScofieldCommerce.Application.Interfaces.Repositories
     {
         Task AdicionarAsync(Venda venda);
         Task<Venda?> ObterPorIdAsync(long id);
-        Task<dynamic> ObterResumoComissoesAsync();
+        Task<dynamic> ObterResumoComissoesAsync(DateTime? data = null);
         Task<IEnumerable<dynamic>> ObterVendasFiltrosAsync(long? produtoId, DateTime? data, long? clienteId, bool? comissaoRecebida = null);
         Task<IEnumerable<dynamic>> RelatorioVendasDiaAsync();
         Task<IEnumerable<dynamic>> RelatorioVendasMesAsync();

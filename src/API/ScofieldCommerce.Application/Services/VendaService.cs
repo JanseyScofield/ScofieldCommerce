@@ -186,11 +186,11 @@ namespace ScofieldCommerce.Application.Services
             }
         }
 
-        public async Task<Result<dynamic>> ObterResumoComissoesAsync()
+        public async Task<Result<dynamic>> ObterResumoComissoesAsync(DateTime? data = null)
         {
             try
             {
-                var resumo = await _vendaRepository.ObterResumoComissoesAsync();
+                var resumo = await _vendaRepository.ObterResumoComissoesAsync(data);
                 return Result<dynamic>.Ok(resumo);
             }
             catch (Exception ex)

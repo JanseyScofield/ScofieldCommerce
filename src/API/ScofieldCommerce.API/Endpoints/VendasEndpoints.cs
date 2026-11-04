@@ -59,9 +59,9 @@ namespace ScofieldCommerce.API.Endpoints
                 return Results.Ok(new { Mensagem = "Comissão baixada com sucesso." });
             });
 
-            group.MapGet("/comissoes/resumo", async (IVendaService service) =>
+            group.MapGet("/comissoes/resumo", async ([FromQuery] DateTime? data, IVendaService service) =>
             {
-                var result = await service.ObterResumoComissoesAsync();
+                var result = await service.ObterResumoComissoesAsync(data);
                 if (!result.IsSuccess)
                     return Results.BadRequest(new { Erro = result.ErrorMessage });
 

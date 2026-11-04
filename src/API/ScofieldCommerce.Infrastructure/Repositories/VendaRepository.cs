@@ -29,7 +29,7 @@ namespace ScofieldCommerce.Infrastructure.Repositories
             return await _context.Vendas.FirstOrDefaultAsync(v => v.Id == id);
         }
 
-        public async Task<dynamic> ObterResumoComissoesAsync()
+        public async Task<dynamic> ObterResumoComissoesAsync(DateTime? data = null)
         {
             var connection = _context.Database.GetDbConnection();
             var sql = @"
@@ -37,8 +37,9 @@ namespace ScofieldCommerce.Infrastructure.Repositories
                     COALESCE(SUM(CASE WHEN ""ComissaoRecebida"" = true THEN ""ComissaoTotal"" ELSE 0 END), 0) as ""ComissaoRecebida"",
                     COALESCE(SUM(CASE WHEN ""ComissaoRecebida"" = false THEN ""ComissaoTotal"" ELSE 0 END), 0) as ""ComissaoPendente"",
                     COALESCE(SUM(""ComissaoTotal""), 0) as ""TotalComissao""
-                FROM ""Vendas"";";
-            return await connection.QueryFirstOrDefaultAsync(sql);
+                FROM ""Vendas""
+                WHERE " + (data.HasValue ? @" DATE(""DataVenda"") = DATE(@Data) " : @" DATE(""DataVenda"") = CURRENT_DATE ") + @";";
+            return await connection.QueryFirstOrDefaultAsync(sql, new { Data = data });
         }
 
         public async Task<decimal> ObterTotalVendasGlobalAsync()
@@ -85,7 +86,9 @@ namespace ScofieldCommerce.Infrastructure.Repositories
                     DATE(v.""DataVenda"") as ""Dia"",
                     SUM(v.""ValorTotal"") as ""ValorVendido"",
                     COALESCE(SUM(pv.TotalQtd), 0) as ""QuantidadeProdutos"",
-                    SUM(v.""ComissaoTotal"") as ""Comissao""
+                    SUM(v.""ComissaoTotal"") as ""Comissao"",
+                    COALESCE(SUM(CASE WHEN v.""ComissaoRecebida"" = true THEN v.""ComissaoTotal"" ELSE 0 END), 0) as ""ComissaoRecebida"",
+                    COALESCE(SUM(CASE WHEN v.""ComissaoRecebida"" = false THEN v.""ComissaoTotal"" ELSE 0 END), 0) as ""ComissaoPendente""
                 FROM ""Vendas"" v
                 LEFT JOIN (
                     SELECT ""VendaId"", SUM(""Quantidade"") as TotalQtd
@@ -106,7 +109,9 @@ namespace ScofieldCommerce.Infrastructure.Repositories
                     EXTRACT(MONTH FROM v.""DataVenda"") as ""Mes"",
                     EXTRACT(YEAR FROM v.""DataVenda"") as ""Ano"",
                     SUM(v.""ValorTotal"") as ""ValorVendido"",
-                    SUM(v.""ComissaoTotal"") as ""Comissao""
+                    SUM(v.""ComissaoTotal"") as ""Comissao"",
+                    COALESCE(SUM(CASE WHEN v.""ComissaoRecebida"" = true THEN v.""ComissaoTotal"" ELSE 0 END), 0) as ""ComissaoRecebida"",
+                    COALESCE(SUM(CASE WHEN v.""ComissaoRecebida"" = false THEN v.""ComissaoTotal"" ELSE 0 END), 0) as ""ComissaoPendente""
                 FROM ""Vendas"" v
                 GROUP BY EXTRACT(MONTH FROM v.""DataVenda""), EXTRACT(YEAR FROM v.""DataVenda"")
                 ORDER BY ""Ano"" DESC, ""Mes"" DESC;

@@ -12,6 +12,6 @@ namespace ScofieldCommerce.Application.Interfaces.Services
         Task<Result<CalculoVendaResultadoDto>> CalcularVendaAsync(CalcularVendaDto dto);
         Task<Result<IEnumerable<dynamic>>> ObterVendasFiltrosAsync(long? produtoId, System.DateTime? data, long? clienteId, bool? comissaoRecebida = null);
         Task<Result<bool>> DarBaixaComissaoAsync(long vendaId);
-        Task<Result<dynamic>> ObterResumoComissoesAsync();
+        Task<Result<dynamic>> ObterResumoComissoesAsync(System.DateTime? data = null);
     }
 }

@@ -21,6 +21,8 @@ export const vendasQueries = {
         totalVendas = Number(maisRecente.valorVendido || maisRecente.ValorVendido || 0);
         totalProdutos = Number(maisRecente.quantidadeProdutos || maisRecente.QuantidadeProdutos || 0);
         totalComissao = Number(maisRecente.comissao || maisRecente.Comissao || 0);
+        comissaoRecebida = Number(maisRecente.comissaoRecebida ?? maisRecente.ComissaoRecebida ?? 0);
+        comissaoPendente = Number(maisRecente.comissaoPendente ?? maisRecente.ComissaoPendente ?? 0);
       }
 
       if (resComissoes.status === 'fulfilled' && resComissoes.value.data) {
