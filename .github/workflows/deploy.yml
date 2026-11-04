@@ -13,6 +13,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Atualizar containers Docker
+        shell: cmd
         run: |
           docker compose down
           docker compose up -d --build
