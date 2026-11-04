@@ -186,3 +186,26 @@ A **Versão 1.2** introduziu o controle completo do ciclo de recebimento de comi
 * **Design Otimizado para Resolução Nativa (100% de Zoom)**:
   * Reestruturação das proporções, tipografia e espaçamentos internos para garantir exibição completa e harmoniosa de todos os 5 cards de KPI em linha única.
   * Remoção do truncamento com reticências (`...`), exibindo valores monetários integrais com clareza em qualquer resolução.
+
+
+---
+
+### 🚀 Versão 1.3 - Precisão de Indicadores no Dashboard e Automação de Deploy 🌟
+
+A **Versão 1.3** aprimorou a consistência dos dados exibidos no Dashboard, corrigindo os cálculos diários de comissão, tratando dias sem movimentação de vendas com precisão matemática e introduzindo uma pipeline automatizada para implantação contínua da aplicação.
+
+#### 🎯 1. Precisão nos KPIs de Comissão Diária
+* **Filtro Estrito do Dia Vigente**: A consulta de resumo de comissões (`ObterResumoComissoesAsync`) foi corrigida para considerar estritamente as vendas do dia atual (`CURRENT_DATE`), eliminando a agregação indevida de dados históricos passados nos KPIs de hoje.
+* **Consistência dos Indicadores**: Sincronização direta entre os cards **"Comissão (Hoje)"**, **"Comissão Recebida"** e **"Comissão a Receber"**, garantindo que a soma das comissões recebidas e pendentes corresponda exatamente ao total gerado no dia.
+* **Detalhamento no Relatório Diário**: Inclusão dos campos agregados `ComissaoRecebida` e `ComissaoPendente` na consulta diária de vendas (`RelatorioVendasDiaAsync`).
+
+#### 📅 2. Tratamento de Dias sem Venda no Dashboard
+* **Zerar Indicadores em Dias sem Movimento**: Caso o usuário inicialize o sistema em um dia sem registros de vendas, os KPIs exibem de forma confiável o valor zero (`R$ 0,00` ou `0`), eliminando o bug que herdava os números do último dia com vendas registradas na base.
+* **Ponto Zero na Evolução Diária**: O gráfico de linha da **"Evolução de Vendas Diárias (Mês Atual)"** agora inclui o dia de hoje com valor `0` caso não haja vendas faturadas, proporcionando uma visualização clara e em tempo real do status do dia.
+* **Delimitação Estrita de Mês e Ano**:
+  * O gráfico de evolução diária passa a filtrar exclusivamente os dias do mês atual (`EXTRACT(MONTH FROM "DataVenda") = EXTRACT(MONTH FROM CURRENT_DATE)`).
+  * O gráfico comparativo mensal restringe os dados ao ano corrente (`EXTRACT(YEAR FROM "DataVenda") = EXTRACT(YEAR FROM CURRENT_DATE)`).
+
+#### 🔌 3. Pipeline de Implantação Contínua (CI/CD)
+* **Gatilho Manual via GitHub Actions**: Criação do workflow `.github/workflows/deploy.yml` com gatilho sob demanda (`workflow_dispatch`).
+* **Deploy Automatizado em Runner Self-Hosted**: Execução automatizada da atualização e reconstrução dos containers Docker em produção (`docker compose down`, `docker compose up -d --build` e limpeza de imagens antigas).
