@@ -1,0 +1,19 @@
+name: Deploy ScofieldCommerce
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Atualizar e Subir Aplicação
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Atualizar containers Docker
+        run: |
+          docker compose down
+          docker compose up -d --build
+          docker image prune -f
