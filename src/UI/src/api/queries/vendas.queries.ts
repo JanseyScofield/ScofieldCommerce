@@ -15,20 +15,35 @@ export const vendasQueries = {
         apiClient.get<any>('/vendas/comissoes/resumo')
       ]);
 
-      if (resDia.status === 'fulfilled' && resDia.value.data && resDia.value.data.length > 0) {
-        // Pega o dia mais recente (o SQL ordena por Dia DESC)
-        const maisRecente = resDia.value.data[0];
-        totalVendas = Number(maisRecente.valorVendido || maisRecente.ValorVendido || 0);
-        totalProdutos = Number(maisRecente.quantidadeProdutos || maisRecente.QuantidadeProdutos || 0);
-        totalComissao = Number(maisRecente.comissao || maisRecente.Comissao || 0);
-        comissaoRecebida = Number(maisRecente.comissaoRecebida ?? maisRecente.ComissaoRecebida ?? 0);
-        comissaoPendente = Number(maisRecente.comissaoPendente ?? maisRecente.ComissaoPendente ?? 0);
+      const now = new Date();
+      const hojeAno = now.getFullYear();
+      const hojeMes = String(now.getMonth() + 1).padStart(2, '0');
+      const hojeDia = String(now.getDate()).padStart(2, '0');
+      const hojeStr = `${hojeAno}-${hojeMes}-${hojeDia}`;
+
+      if (resDia.status === 'fulfilled' && Array.isArray(resDia.value.data)) {
+        const registroHoje = resDia.value.data.find((d: any) => {
+          const diaVal = String(d.dia || d.Dia || '').slice(0, 10);
+          return diaVal === hojeStr;
+        });
+
+        if (registroHoje) {
+          totalVendas = Number(registroHoje.valorVendido || registroHoje.ValorVendido || 0);
+          totalProdutos = Number(registroHoje.quantidadeProdutos || registroHoje.QuantidadeProdutos || 0);
+          totalComissao = Number(registroHoje.comissao || registroHoje.Comissao || 0);
+          comissaoRecebida = Number(registroHoje.comissaoRecebida ?? registroHoje.ComissaoRecebida ?? 0);
+          comissaoPendente = Number(registroHoje.comissaoPendente ?? registroHoje.ComissaoPendente ?? 0);
+        }
       }
 
       if (resComissoes.status === 'fulfilled' && resComissoes.value.data) {
         const c = resComissoes.value.data;
-        comissaoRecebida = Number(c.comissaoRecebida || c.ComissaoRecebida || 0);
-        comissaoPendente = Number(c.comissaoPendente || c.ComissaoPendente || 0);
+        if (c.comissaoRecebida !== undefined || c.ComissaoRecebida !== undefined) {
+          comissaoRecebida = Number(c.comissaoRecebida || c.ComissaoRecebida || 0);
+        }
+        if (c.comissaoPendente !== undefined || c.ComissaoPendente !== undefined) {
+          comissaoPendente = Number(c.comissaoPendente || c.ComissaoPendente || 0);
+        }
       }
     } catch (error) {
       console.error('Erro ao buscar métricas do dashboard:', error);
@@ -60,14 +75,37 @@ export const vendasQueries = {
   obterEvolucaoDiariaVendas: async () => {
     try {
       const { data } = await apiClient.get<any[]>('/relatorios/vendas/dia');
-      // Mapeia e inverte para ordem cronológica (esquerda para a direita no gráfico)
-      return data.map(d => {
-        const diaVal = d.dia || d.Dia;
+      const mapPorDia = new Map<string, number>();
+
+      if (Array.isArray(data)) {
+        data.forEach((d: any) => {
+          const diaVal = d.dia || d.Dia;
+          if (diaVal) {
+            const diaKey = String(diaVal).slice(0, 10);
+            mapPorDia.set(diaKey, Number(d.valorVendido || d.ValorVendido || 0));
+          }
+        });
+      }
+
+      const now = new Date();
+      const hojeAno = now.getFullYear();
+      const hojeMes = String(now.getMonth() + 1).padStart(2, '0');
+      const hojeDia = String(now.getDate()).padStart(2, '0');
+      const hojeKey = `${hojeAno}-${hojeMes}-${hojeDia}`;
+
+      if (!mapPorDia.has(hojeKey)) {
+        mapPorDia.set(hojeKey, 0);
+      }
+
+      const chavesOrdenadas = Array.from(mapPorDia.keys()).sort();
+      return chavesOrdenadas.map(k => {
+        const partes = k.split('-');
+        const diaFormatado = partes.length === 3 ? `${partes[2]}/${partes[1]}` : k;
         return {
-          data: diaVal ? new Date(diaVal).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '',
-          valor: Number(d.ValorVendido || 0)
+          data: diaFormatado,
+          valor: mapPorDia.get(k) || 0
         };
-      }).reverse();
+      });
     } catch (error) {
       console.error('Erro ao obter evolução diária:', error);
       return [];
@@ -78,13 +116,27 @@ export const vendasQueries = {
     try {
       const { data } = await apiClient.get<any[]>('/relatorios/vendas/mes');
       const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-      return data.map(d => {
-        const mesVal = Number(d.mes || d.Mes || 1);
-        return {
-          mes: meses[mesVal - 1] || 'Jan',
-          valor: Number(d.ValorVendido || 0)
-        };
-      }).reverse();
+      const mapPorMes = new Map<number, number>();
+
+      if (Array.isArray(data)) {
+        data.forEach((d: any) => {
+          const mesVal = Number(d.mes || d.Mes || 0);
+          if (mesVal >= 1 && mesVal <= 12) {
+            mapPorMes.set(mesVal, Number(d.valorVendido || d.ValorVendido || 0));
+          }
+        });
+      }
+
+      if (mapPorMes.size === 0) {
+        const mesAtual = new Date().getMonth() + 1;
+        return [{ mes: meses[mesAtual - 1], valor: 0 }];
+      }
+
+      const mesesOrdenados = Array.from(mapPorMes.keys()).sort((a, b) => a - b);
+      return mesesOrdenados.map(m => ({
+        mes: meses[m - 1],
+        valor: mapPorMes.get(m) || 0
+      }));
     } catch (error) {
       console.error('Erro ao obter comparativo mensal:', error);
       return [];
@@ -93,30 +145,36 @@ export const vendasQueries = {
 
   obterHistoricoVendas: async (produtoId?: string, dataFiltro?: string, clienteId?: string, comissaoRecebida?: boolean): Promise<VendaHistorico[]> => {
     try {
-      const params: any = {};
-      if (produtoId) params.produtoId = Number(produtoId);
+      const params: Record<string, any> = {};
+      if (produtoId) params.produtoId = produtoId;
       if (dataFiltro) params.data = dataFiltro;
-      if (clienteId) params.clienteId = Number(clienteId);
+      if (clienteId) params.clienteId = clienteId;
       if (comissaoRecebida !== undefined) params.comissaoRecebida = comissaoRecebida;
 
       const { data } = await apiClient.get<any[]>('/vendas', { params });
-      return data.map(v => ({
-        id: Number(v.id || v.Id),
-        dataVenda: v.dataVenda || v.DataVenda,
-        valorTotal: Number(v.valorTotal || v.ValorTotal || 0),
-        comissaoTotal: Number(v.comissaoTotal || v.ComissaoTotal || 0),
-        comissaoRecebida: Boolean(v.comissaoRecebida ?? v.ComissaoRecebida ?? false),
-        prazoPagamentoDias: Number(v.prazoPagamentoDias || v.PrazoPagamentoDias || 0),
-        possuiNotaFiscal: Boolean(v.possuiNotaFiscal ?? v.PossuiNotaFiscal ?? false),
-        razaoSocial: v.razaoSocial || v.RazaoSocial || 'Cliente Desconhecido',
-        quantidadeTotal: Number(v.quantidadeTotal || v.QuantidadeTotal || 0),
-        itens: (v.itens || v.Itens || []).map((i: any) => ({
-          nome: i.nome || i.Nome,
+      
+      return data.map((v: any) => {
+        const itens = (v.itens || v.Itens || []).map((i: any) => ({
+          nome: i.nome || i.Nome || i.produtoNome || i.ProdutoNome || 'Produto',
           quantidade: Number(i.quantidade || i.Quantidade || 0)
-        }))
-      }));
+        }));
+        const quantidadeTotal = Number(v.quantidadeTotal || v.QuantidadeTotal || itens.reduce((acc: number, curr: any) => acc + curr.quantidade, 0));
+
+        return {
+          id: v.id || v.Id,
+          dataVenda: v.dataVenda || v.DataVenda,
+          valorTotal: Number(v.valorTotal || v.ValorTotal || 0),
+          comissaoTotal: Number(v.comissaoTotal || v.ComissaoTotal || 0),
+          comissaoRecebida: Boolean(v.comissaoRecebida ?? v.ComissaoRecebida ?? false),
+          prazoPagamentoDias: Number(v.prazoPagamentoDias || v.PrazoPagamentoDias || 0),
+          possuiNotaFiscal: Boolean(v.possuiNotaFiscal ?? v.PossuiNotaFiscal),
+          razaoSocial: v.razaoSocial || v.RazaoSocial || 'Cliente não identificado',
+          quantidadeTotal,
+          itens
+        };
+      });
     } catch (error) {
-      console.error('Erro ao obter histórico de vendas:', error);
+      console.error('Erro ao buscar histórico de vendas:', error);
       return [];
     }
   }

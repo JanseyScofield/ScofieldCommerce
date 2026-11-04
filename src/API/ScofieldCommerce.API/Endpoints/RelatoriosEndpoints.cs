@@ -12,14 +12,14 @@ namespace ScofieldCommerce.API.Endpoints
         {
             var group = app.MapGroup("/relatorios").WithTags("Relatórios");
 
-            group.MapGet("/vendas/dia", async (IVendaRepository repo) =>
+            group.MapGet("/vendas/dia", async ([FromQuery] int? mes, [FromQuery] int? ano, IVendaRepository repo) =>
             {
-                return Results.Ok(await repo.RelatorioVendasDiaAsync());
+                return Results.Ok(await repo.RelatorioVendasDiaAsync(mes, ano));
             });
 
-            group.MapGet("/vendas/mes", async (IVendaRepository repo) =>
+            group.MapGet("/vendas/mes", async ([FromQuery] int? ano, IVendaRepository repo) =>
             {
-                return Results.Ok(await repo.RelatorioVendasMesAsync());
+                return Results.Ok(await repo.RelatorioVendasMesAsync(ano));
             });
 
             group.MapGet("/vendas/cliente", async (IVendaRepository repo) =>

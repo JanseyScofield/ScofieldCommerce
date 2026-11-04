@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -78,7 +78,7 @@ namespace ScofieldCommerce.Infrastructure.Repositories
             return await connection.QueryAsync(sql, new { ProdutoId = produtoId, Data = data, ClienteId = clienteId, ComissaoRecebida = comissaoRecebida });
         }
 
-        public async Task<IEnumerable<dynamic>> RelatorioVendasDiaAsync()
+        public async Task<IEnumerable<dynamic>> RelatorioVendasDiaAsync(int? mes = null, int? ano = null)
         {
             var connection = _context.Database.GetDbConnection();
             var sql = @"
@@ -95,13 +95,16 @@ namespace ScofieldCommerce.Infrastructure.Repositories
                     FROM ""ProdutosVendidos""
                     GROUP BY ""VendaId""
                 ) pv ON v.""Id"" = pv.""VendaId""
+                WHERE 1 = 1
+                " + (mes.HasValue ? @" AND EXTRACT(MONTH FROM v.""DataVenda"") = @Mes " : @" AND EXTRACT(MONTH FROM v.""DataVenda"") = EXTRACT(MONTH FROM CURRENT_DATE) ") + @"
+                " + (ano.HasValue ? @" AND EXTRACT(YEAR FROM v.""DataVenda"") = @Ano " : @" AND EXTRACT(YEAR FROM v.""DataVenda"") = EXTRACT(YEAR FROM CURRENT_DATE) ") + @"
                 GROUP BY DATE(v.""DataVenda"")
                 ORDER BY ""Dia"" DESC;
             ";
-            return await connection.QueryAsync(sql);
+            return await connection.QueryAsync(sql, new { Mes = mes, Ano = ano });
         }
 
-        public async Task<IEnumerable<dynamic>> RelatorioVendasMesAsync()
+        public async Task<IEnumerable<dynamic>> RelatorioVendasMesAsync(int? ano = null)
         {
             var connection = _context.Database.GetDbConnection();
              var sql = @"
@@ -113,10 +116,12 @@ namespace ScofieldCommerce.Infrastructure.Repositories
                     COALESCE(SUM(CASE WHEN v.""ComissaoRecebida"" = true THEN v.""ComissaoTotal"" ELSE 0 END), 0) as ""ComissaoRecebida"",
                     COALESCE(SUM(CASE WHEN v.""ComissaoRecebida"" = false THEN v.""ComissaoTotal"" ELSE 0 END), 0) as ""ComissaoPendente""
                 FROM ""Vendas"" v
+                WHERE 1 = 1
+                " + (ano.HasValue ? @" AND EXTRACT(YEAR FROM v.""DataVenda"") = @Ano " : @" AND EXTRACT(YEAR FROM v.""DataVenda"") = EXTRACT(YEAR FROM CURRENT_DATE) ") + @"
                 GROUP BY EXTRACT(MONTH FROM v.""DataVenda""), EXTRACT(YEAR FROM v.""DataVenda"")
                 ORDER BY ""Ano"" DESC, ""Mes"" DESC;
             ";
-            return await connection.QueryAsync(sql);
+            return await connection.QueryAsync(sql, new { Ano = ano });
         }
 
         public async Task<IEnumerable<dynamic>> RelatorioVendasClienteAsync()
